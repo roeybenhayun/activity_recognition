@@ -68,45 +68,64 @@ class ActivityRecognition:
 
 
     def data_setup(self):
-        #print ("Data setup")
-        # iterate ground truth and exteract the
-        # need to get the sample number 
-        # 
-        #/Users/roeybenhayun/Projects/ASU/data_mining
-        #/activity_recognition/Data_Mining_Assign1Data/groundTruth/user39/fork/1503955687111.txt
-        # create a list of dictionary for the ground true
-        # create a 2d array
-        # get the start index
-        # get the end index
-        # init 2d array
         
-        #all_imu_myo_data = []
-        #for i in range (len(self.__myo_data_file_list)):
-        #    file = self.__myo_data_file_list[i]
-        #    if "IMU" in file:
-        #        print file
-        #        result = re.search('MyoData/(.*)/fork', file)
-        #        if result==None:
-        #            result = re.search('MyoData/(.*)/spoon', file)
-        #        print(result.group(1))
-        #        #imu_myo_data=np.genfromtxt(file, dtype=None, delimiter=',')
-        #        #all_imu_nyo_data.append(imu_myo_data)   
+        all_imu_myo_fork_data = []
+        imu_myo_fork_data_userid = []
+        all_imu_myo_spoon_data = []
+        imu_myo_spoon_data_userid = []
 
-        # print(all_imu_myo_data)
+        for i in range (len(self.__myo_data_file_list)):
+            file = self.__myo_data_file_list[i]
+            if "IMU" in file:
+                if "fork" in file:
+                    result = re.search('MyoData/(.*)/fork', file)
+                    imu_myo_fork_data_userid.append(result.group(1))
+                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    all_imu_myo_fork_data.append(imu_myo_fork_data)
+                elif "spoon" in file:
+                    result = re.search('MyoData/(.*)/spoon', file)
+                    imu_myo_spoon_data_userid.append(result.group(1))
+                    imu_myo_spoon_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    all_imu_myo_spoon_data.append(imu_myo_spoon_data)
+                else:
+                    print "unknown file.continue"  
+
+
+        #print(all_imu_myo_data)
+        print("IMU MYO SPOON DATA USERS")
+        print(imu_myo_spoon_data_userid)
+        print("IMU MYO FORK DATA USERS")
+        print(imu_myo_spoon_data_userid)
+
         
-        all_ground_truth_data = []
-        
+        all_ground_truth_fork_data = []
+        ground_truth_fork_data_userid = []        
+        all_ground_truth_spoon_data = []
+        ground_truth_spoon_data_userid = []
+
+        # Iterate all ground truth data
         for i in range (len(self.__ground_truth_file_list)):
             file = self.__ground_truth_file_list[i]
-            print file
-            result = re.search('groundTruth/(.*)/fork', file)
-            if result==None:
+            if "fork" in file:
+                result = re.search('groundTruth/(.*)/fork', file)
+                ground_truth_fork_data_userid.append(result.group(1))
+                ground_truth_fork_data=np.genfromtxt(file, dtype=None, delimiter=',', usecols=(0, 1))
+                all_ground_truth_fork_data.append(ground_truth_fork_data)
+            elif "spoon" in file:
                 result = re.search('groundTruth/(.*)/spoon', file)
-                print(result.group(1))
-            ground_truth_data=np.genfromtxt(file, dtype=None, delimiter=',', usecols=(0, 1))
-            all_ground_truth_data.append(ground_truth_data)
+                ground_truth_spoon_data_userid.append(result.group(1))
+                ground_truth_spoon_data=np.genfromtxt(file, dtype=None, delimiter=',', usecols=(0, 1))
+                all_ground_truth_spoon_data.append(ground_truth_spoon_data)
+            else:
+                print "unknown file.continue"
+
+
+        print("GROUND TRUTH SPOON USERS")
+        print(ground_truth_spoon_data_userid)
+        print("GROUND TRUTH FORK USERS")
+        print(ground_truth_fork_data_userid)
+
         
-        print(all_ground_truth_data)
 
 
 
