@@ -137,60 +137,109 @@ class ActivityRecognition:
         print("GROUND TRUTH FORK USERS")
         print(ground_truth_fork_data_userid)
 
-        
-        # start with fork
+        file_prefix = 'eating_with_fork_imu_data_'
+        userid = []
+        ###########################################################################
+        # Fork IMU data
+        ###########################################################################
+        print("###########################################################################")
+        print("Extracting eating with fork IMU data...")
+        print("###########################################################################")
         for i in range (len(all_ground_truth_fork_data)):
             fork_data = all_ground_truth_fork_data[i]
             userid = ground_truth_fork_data_userid[i]
-            print(userid)
+            #print(userid)
             #  get the index for this user id
             for k in range (np.size(imu_myo_fork_data_userid)):
                 if (userid == imu_myo_fork_data_userid[k]):
                     uid = k
-                    print("FOUND, ",k)
+                    #print("FOUND, ",k)
                     break
             
             myo_fork_data = all_imu_myo_fork_data[k]
-            print(type(myo_fork_data))
-            print(myo_fork_data.shape)
+
             # create a temp numpy array of zeros
             eating_action_range = np.zeros([len(fork_data),2], dtype=int)
             # should get the size according to the shape
             temp_fork_eating = np.ones((1,10),dtype=float)
-            print(temp_fork_eating)
+            #print(temp_fork_eating)
             temp_fork_non_eating = np.ones((1,10))
 
             for j in range(len(fork_data)):
                 start_frame = fork_data[j][0]
                 end_frame = fork_data[j][1]
-                print ("Start = ", start_frame)
-                print ("End = ", end_frame)
+                #print ("Start = ", start_frame)
+                #print ("End = ", end_frame)
                 start_row = (start_frame * 50)/30
                 end_row = (end_frame * 50)/30
                 eating_action_range[j][0] = start_row
                 eating_action_range[j][1] = end_row
-                cc = myo_fork_data[start_row:end_row]
-                print("*****CC**")
-                print(type(cc))
-                print(cc.shape)
-                #print(cc)
-                print("*****TEMP**")
-                print(type(temp_fork_eating))
-                print(temp_fork_eating.shape)
-                #print(temp_fork_eating)
-                
-                temp_fork_eating = np.concatenate((temp_fork_eating,cc))
-                print("*****CONCAT**")
-                print(type(temp_fork_eating))
-                print(temp_fork_eating.shape)
-                print("*****END**")
-
+                extracted_imu_data = myo_fork_data[start_row:end_row]
+                temp_fork_eating = np.concatenate((temp_fork_eating,extracted_imu_data))
             
+
+            # make sure to delete the first row of ones
+            temp_fork_eating = np.delete(temp_fork_eating,0,0)
+
+            # Save the IMU data for fork eating            
+            np.savetxt(file_prefix + userid + '.csv',temp_fork_eating, delimiter=',')
             imu_fork_eating.append(temp_fork_eating)
             temp_fork_eating = []
 
+        # @todo: merge to one function
+        ###########################################################################
+        # Spoon IMU data
+        ###########################################################################
+        
+        print("###########################################################################")
+        print("Extracting eating with spoon IMU data...")
+        print("###########################################################################")
+        file_prefix = 'eating_with_spoom_imu_data_'
 
-        np.savetxt('data.csv',imu_fork_eating[2],delimiter=',')
+        for i in range (len(all_ground_truth_spoon_data)):
+            spoon_data = all_ground_truth_spoon_data[i]
+            userid = ground_truth_spoon_data_userid[i]
+            #print(userid)
+            #  get the index for this user id
+            for k in range (np.size(imu_myo_spoon_data_userid)):
+                if (userid == imu_myo_spoon_data_userid[k]):
+                    uid = k
+                    #print("FOUND, ",k)
+                    break
+            
+            myo_spoon_data = all_imu_myo_spoon_data[k]
+
+            # create a temp numpy array of zeros
+            eating_action_range = np.zeros([len(spoon_data),2], dtype=int)
+            # should get the size according to the shape
+            temp_spoon_eating = np.ones((1,10),dtype=float)
+            #print(temp_spoon_eating)
+            temp_spoon_non_eating = np.ones((1,10))
+
+            for j in range(len(spoon_data)):
+                start_frame = spoon_data[j][0]
+                end_frame = spoon_data[j][1]
+                #print ("Start = ", start_frame)
+                #print ("End = ", end_frame)
+                start_row = (start_frame * 50)/30
+                end_row = (end_frame * 50)/30
+                eating_action_range[j][0] = start_row
+                eating_action_range[j][1] = end_row
+                extracted_imu_data = myo_spoon_data[start_row:end_row]
+                temp_spoon_eating = np.concatenate((temp_spoon_eating,extracted_imu_data))
+            
+
+            # make sure to delete the first row of ones
+            temp_spoon_eating = np.delete(temp_spoon_eating,0,0)
+
+            # Save the IMU data for fork eating            
+            np.savetxt(file_prefix + userid + '.csv',temp_spoon_eating, delimiter=',')
+            imu_spoon_eating.append(temp_spoon_eating)
+            temp_spoon_eating = []
+        
+        print("###########################################################################")
+        print("Extracting eating actions IMU data completed")
+        print("###########################################################################")
 
 
     def load_data(self):
