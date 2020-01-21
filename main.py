@@ -87,7 +87,8 @@ class ActivityRecognition:
                 if "fork" in file:
                     result = re.search('MyoData/(.*)/fork', file)
                     imu_myo_fork_data_userid.append(result.group(1))
-                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')                    
+                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    # Add another column of zeros representing non eating action     
                     all_imu_myo_fork_data.append(imu_myo_fork_data)
                 elif "spoon" in file:
                     result = re.search('MyoData/(.*)/spoon', file)
