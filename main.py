@@ -87,13 +87,13 @@ class ActivityRecognition:
                 if "fork" in file:
                     result = re.search('MyoData/(.*)/fork', file)
                     imu_myo_fork_data_userid.append(result.group(1))
-                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    imu_myo_fork_data=np.genfromtxt(file, dtype=float, delimiter=',',usecols=(1,2,3,4,5,6,7,8,9,10))
                     # Add another column of zeros representing non eating action     
                     all_imu_myo_fork_data.append(imu_myo_fork_data)
                 elif "spoon" in file:
                     result = re.search('MyoData/(.*)/spoon', file)
                     imu_myo_spoon_data_userid.append(result.group(1))
-                    imu_myo_spoon_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    imu_myo_spoon_data=np.genfromtxt(file, dtype=float, delimiter=',',usecols=(1,2,3,4,5,6,7,8,9,10))
                     all_imu_myo_spoon_data.append(imu_myo_spoon_data)
                 else:
                     print "unknown file.continue"  
@@ -150,10 +150,15 @@ class ActivityRecognition:
                     print("FOUND, ",k)
                     break
             
-            #myo_fork_data = all_imu_myo_fork_data[k]
-
+            myo_fork_data = all_imu_myo_fork_data[k]
+            print(type(myo_fork_data))
+            print(myo_fork_data.shape)
             # create a temp numpy array of zeros
             eating_action_range = np.zeros([len(fork_data),2], dtype=int)
+            # should get the size according to the shape
+            temp_fork_eating = np.ones((1,10),dtype=float)
+            print(temp_fork_eating)
+            temp_fork_non_eating = np.ones((1,10))
 
             for j in range(len(fork_data)):
                 start_frame = fork_data[j][0]
@@ -164,15 +169,28 @@ class ActivityRecognition:
                 end_row = (end_frame * 50)/30
                 eating_action_range[j][0] = start_row
                 eating_action_range[j][1] = end_row
+                cc = myo_fork_data[start_row:end_row]
+                print("*****CC**")
+                print(type(cc))
+                print(cc.shape)
+                #print(cc)
+                print("*****TEMP**")
+                print(type(temp_fork_eating))
+                print(temp_fork_eating.shape)
+                #print(temp_fork_eating)
+                
+                temp_fork_eating = np.concatenate((temp_fork_eating,cc))
+                print("*****CONCAT**")
+                print(type(temp_fork_eating))
+                print(temp_fork_eating.shape)
+                print("*****END**")
 
-                # copy eating here
+            
+            imu_fork_eating.append(temp_fork_eating)
+            temp_fork_eating = []
 
 
-            # and delete eating here
-
-
-
-            print(eating_action_range)
+        np.savetxt('data.csv',imu_fork_eating[2],delimiter=',')
 
 
     def load_data(self):
