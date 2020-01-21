@@ -68,11 +68,18 @@ class ActivityRecognition:
 
 
     def data_setup(self):
-        
+
+        # all should be class members
+        # should be defined in the constructor
         all_imu_myo_fork_data = []
         imu_myo_fork_data_userid = []
         all_imu_myo_spoon_data = []
         imu_myo_spoon_data_userid = []
+        imu_fork_eating = []
+        imu_fork_non_eating = []
+        imu_spoon_eating = []
+        imu_spoon_non_eating = []
+        
 
         for i in range (len(self.__myo_data_file_list)):
             file = self.__myo_data_file_list[i]
@@ -80,7 +87,7 @@ class ActivityRecognition:
                 if "fork" in file:
                     result = re.search('MyoData/(.*)/fork', file)
                     imu_myo_fork_data_userid.append(result.group(1))
-                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')
+                    imu_myo_fork_data=np.genfromtxt(file, dtype=None, delimiter=',')                    
                     all_imu_myo_fork_data.append(imu_myo_fork_data)
                 elif "spoon" in file:
                     result = re.search('MyoData/(.*)/spoon', file)
@@ -90,16 +97,20 @@ class ActivityRecognition:
                 else:
                     print "unknown file.continue"  
 
-
-        #print(all_imu_myo_data)
+                
         print("IMU MYO SPOON DATA USERS")
         print(imu_myo_spoon_data_userid)
         print("IMU MYO FORK DATA USERS")
         print(imu_myo_spoon_data_userid)
 
         
+        # fork eating, fork non eating
+        # spoon eating, spoon non eating
+
+        # Fork
         all_ground_truth_fork_data = []
-        ground_truth_fork_data_userid = []        
+        ground_truth_fork_data_userid = []
+        # Spoon
         all_ground_truth_spoon_data = []
         ground_truth_spoon_data_userid = []
 
@@ -126,8 +137,41 @@ class ActivityRecognition:
         print(ground_truth_fork_data_userid)
 
         
+        # start with fork
+        for i in range (len(all_ground_truth_fork_data)):
+            fork_data = all_ground_truth_fork_data[i]
+            userid = ground_truth_fork_data_userid[i]
+            print(userid)
+            #  get the index for this user id
+            for k in range (np.size(imu_myo_fork_data_userid)):
+                if (userid == imu_myo_fork_data_userid[k]):
+                    uid = k
+                    print("FOUND, ",k)
+                    break
+            
+            #myo_fork_data = all_imu_myo_fork_data[k]
+
+            # create a temp numpy array of zeros
+            eating_action_range = np.zeros([len(fork_data),2], dtype=int)
+
+            for j in range(len(fork_data)):
+                start_frame = fork_data[j][0]
+                end_frame = fork_data[j][1]
+                print ("Start = ", start_frame)
+                print ("End = ", end_frame)
+                start_row = (start_frame * 50)/30
+                end_row = (end_frame * 50)/30
+                eating_action_range[j][0] = start_row
+                eating_action_range[j][1] = end_row
+
+                # copy eating here
 
 
+            # and delete eating here
+
+
+
+            print(eating_action_range)
 
 
     def load_data(self):
