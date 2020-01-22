@@ -3,3 +3,4 @@ docs/*
 docs/*
 .DS_Store
 .vscode/*
+out/*

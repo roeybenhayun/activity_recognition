@@ -80,6 +80,16 @@ class ActivityRecognition:
         imu_spoon_eating = []
         imu_spoon_non_eating = []
         
+        out_dir = 'out'
+        fork = 'fork'
+        spoon = 'spoon'
+        eating = 'eating'
+        non_eating = 'non_eating'
+        
+        	
+        os.mkdir(out_dir)
+
+        # @todo - delete out directory if exists
 
         for i in range (len(self.__myo_data_file_list)):
             file = self.__myo_data_file_list[i]
@@ -105,9 +115,6 @@ class ActivityRecognition:
         print(imu_myo_spoon_data_userid)
 
         
-        # fork eating, fork non eating
-        # spoon eating, spoon non eating
-
         # Fork
         all_ground_truth_fork_data = []
         ground_truth_fork_data_userid = []
@@ -137,7 +144,8 @@ class ActivityRecognition:
         print("GROUND TRUTH FORK USERS")
         print(ground_truth_fork_data_userid)
 
-        file_prefix = 'eating_with_fork_imu_data_'
+        file_prefix = 'eating_imu_data_'
+        non_eating_file_prefix = 'noneating_imu_data_'
         userid = []
         ###########################################################################
         # Fork IMU data
@@ -152,6 +160,8 @@ class ActivityRecognition:
             #  get the index for this user id
             for k in range (np.size(imu_myo_fork_data_userid)):
                 if (userid == imu_myo_fork_data_userid[k]):
+                    user_dir_path_fork = out_dir + '/' + userid + '/' + 'fork/'
+                    os.makedirs(user_dir_path_fork)
                     uid = k
                     #print("FOUND, ",k)
                     break
@@ -160,10 +170,13 @@ class ActivityRecognition:
 
             # create a temp numpy array of zeros
             eating_action_range = np.zeros([len(fork_data),2], dtype=int)
+
+            
+
             # should get the size according to the shape
             temp_fork_eating = np.ones((1,10),dtype=float)
             #print(temp_fork_eating)
-            temp_fork_non_eating = np.ones((1,10))
+            temp_fork_non_eating = np.ones((1,10),dtype=float)
 
             for j in range(len(fork_data)):
                 start_frame = fork_data[j][0]
@@ -177,12 +190,29 @@ class ActivityRecognition:
                 extracted_imu_data = myo_fork_data[start_row:end_row]
                 temp_fork_eating = np.concatenate((temp_fork_eating,extracted_imu_data))
             
+            # create the range array of non eating fork data
+            non_eating_action_row_indexs = np.zeros(len(myo_fork_data),dtype=int)                        
+
+            for j in range(len(eating_action_range)):
+                eating_start = eating_action_range[j][0]
+                eating_end = eating_action_range[j][1]
+                non_eating_action_row_indexs[eating_start:eating_end] = 1
+
+                        
+            #  get the indexes of the non eating actions
+            extracted_imu_data = []
+            non_eating_action_row_indexs = np.where(non_eating_action_row_indexs == 0)[0]
+            extracted_imu_data = myo_fork_data[non_eating_action_row_indexs]
+            imu_fork_non_eating.append(extracted_imu_data)
+            
+            # save to file the non eating with fork IMU data
+            np.savetxt(user_dir_path_fork + non_eating_file_prefix + '.csv',extracted_imu_data, delimiter=',')
 
             # make sure to delete the first row of ones
             temp_fork_eating = np.delete(temp_fork_eating,0,0)
 
             # Save the IMU data for fork eating            
-            np.savetxt(file_prefix + userid + '.csv',temp_fork_eating, delimiter=',')
+            np.savetxt(user_dir_path_fork + file_prefix + '.csv',temp_fork_eating, delimiter=',')
             imu_fork_eating.append(temp_fork_eating)
             temp_fork_eating = []
 
@@ -194,7 +224,8 @@ class ActivityRecognition:
         print("###########################################################################")
         print("Extracting eating with spoon IMU data...")
         print("###########################################################################")
-        file_prefix = 'eating_with_spoom_imu_data_'
+        #file_prefix = 'eating_with_spoon_imu_data_'
+        #non_eating_file_prefix = 'noneating_with_spoon_imu_data_'
 
         for i in range (len(all_ground_truth_spoon_data)):
             spoon_data = all_ground_truth_spoon_data[i]
@@ -203,6 +234,8 @@ class ActivityRecognition:
             #  get the index for this user id
             for k in range (np.size(imu_myo_spoon_data_userid)):
                 if (userid == imu_myo_spoon_data_userid[k]):
+                    user_dir_path_spoon = out_dir + '/' + userid + '/' + 'spoon/'
+                    os.makedirs(user_dir_path_spoon)
                     uid = k
                     #print("FOUND, ",k)
                     break
@@ -213,14 +246,12 @@ class ActivityRecognition:
             eating_action_range = np.zeros([len(spoon_data),2], dtype=int)
             # should get the size according to the shape
             temp_spoon_eating = np.ones((1,10),dtype=float)
-            #print(temp_spoon_eating)
+            #print(temp_spoon_eating)   
             temp_spoon_non_eating = np.ones((1,10))
 
             for j in range(len(spoon_data)):
                 start_frame = spoon_data[j][0]
                 end_frame = spoon_data[j][1]
-                #print ("Start = ", start_frame)
-                #print ("End = ", end_frame)
                 start_row = (start_frame * 50)/30
                 end_row = (end_frame * 50)/30
                 eating_action_range[j][0] = start_row
@@ -229,11 +260,32 @@ class ActivityRecognition:
                 temp_spoon_eating = np.concatenate((temp_spoon_eating,extracted_imu_data))
             
 
+            non_eating_action_row_indexs = []
+            
+            # create the range array of non eating fork data
+            non_eating_action_row_indexs = np.zeros(len(myo_spoon_data),dtype=int)                        
+
+            for j in range(len(eating_action_range)):
+                eating_start = eating_action_range[j][0]
+                eating_end = eating_action_range[j][1]
+                non_eating_action_row_indexs[eating_start:eating_end] = 1
+
+                        
+            #  get the indexes of the non eating actions
+            extracted_imu_data = []
+            non_eating_action_row_indexs = np.where(non_eating_action_row_indexs == 0)[0]
+            extracted_imu_data = myo_spoon_data[non_eating_action_row_indexs]
+            imu_spoon_non_eating.append(extracted_imu_data)
+            
+            # save to file the non eating with fork IMU data
+            np.savetxt(user_dir_path_spoon + non_eating_file_prefix + '.csv',extracted_imu_data, delimiter=',')
+
+
             # make sure to delete the first row of ones
             temp_spoon_eating = np.delete(temp_spoon_eating,0,0)
 
             # Save the IMU data for fork eating            
-            np.savetxt(file_prefix + userid + '.csv',temp_spoon_eating, delimiter=',')
+            np.savetxt(user_dir_path_spoon + file_prefix + '.csv',temp_spoon_eating, delimiter=',')
             imu_spoon_eating.append(temp_spoon_eating)
             temp_spoon_eating = []
         
