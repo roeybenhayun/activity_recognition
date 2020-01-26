@@ -8,27 +8,15 @@ from tempfile import TemporaryFile
 import re
 
 
-## iterate the ground truth
-## per each user
-## get the start and end
-## for the IMU
-## Eatning 
-## start*50/30
-## end*50/30
-## Non eating - all the rest
-## 
+
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
-        self.__data_dir_path = ground_truth_dir_path 
-        self.__data_file_list = ["AllSamples.mat"]
+        self.__data_dir_path = ground_truth_dir_path
         self.__plot = False
         self.__save = False
-        self.__log_enabled = False                                         
-        # there are gaps in user ids. User 15 does not exsists
-        self.__start_user_id = 9
-        self.__end_user_id = 41
+        self.__log_enabled = False                        
         self.__ground_truth_file_list = []
-        
+
         print(os.path.realpath(__file__))
         self.__data_path = os.path.dirname(os.path.realpath(__file__))
         self.__number_of_users = 0
@@ -53,13 +41,7 @@ class ActivityRecognition:
                 for file in files:                    
                     self.__myo_data_file_list.append(os.path.join(subdir, file))
         
-        #print ("Ground truth")
-        #for i in range(len(self.__ground_truth_file_list)):
-        #    print self.__ground_truth_file_list[i]
-        #print ("My Data")
-        #for i in range(len(self.__myo_data_file_list)):
-        #    print(self.__myo_data_file_list)[i]
-        
+
         
 
 
@@ -328,47 +310,11 @@ class ActivityRecognition:
     
 
 
-def main():
-
-    #objective_function_1 = []
-    #objective_function_2 = []
+def main():        
 
     activityRecognition = ActivityRecognition()
 
     activityRecognition.data_setup()
-    #number_of_clusters = 10
-    #number_of_runs = 2
-    #k = np.arange(2,number_of_clusters+1)
-#
-    #plt.title('Elbow Graph')
-    #plt.xlabel('Number of Clusters K')
-    #plt.ylabel('Objective Function Value')
-#
-    #for run in range(1, number_of_runs+1):
-    #    centroid_init_strategy = 1
-    #    for _k in range(2,number_of_clusters+1):
-    #        ActivityRecognition.setup(centroid_init_strategy,_k)
-    #        objective_function_1.append(ActivityRecognition.compute())
-    #    label = "Strategy 1 - run" + str(run)
-    #    plt.plot (k,objective_function_1, label = label)
-    #    plt.legend()
-    #    #plt.show()
-#
-    #    centroid_init_strategy = 2
-    #    for _k in range(2,number_of_clusters+1):
-    #        ActivityRecognition.setup(centroid_init_strategy ,_k)
-    #        objective_function_2.append(ActivityRecognition.compute())
-    #    label = "Strategy 2 - run" + str(run)
-    #    plt.plot (k,objective_function_2, label = label)
-    #    plt.legend()
-    #    #plt.show()
-    #    
-    #    objective_function_1 = []
-    #    objective_function_2 = []
-    #
-#
-    #plt.show()
-#
     
 
 if __name__ == "__main__":
