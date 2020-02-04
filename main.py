@@ -2,7 +2,6 @@ import scipy.io
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 import math
 from tempfile import TemporaryFile
 import re
@@ -68,35 +67,56 @@ class ActivityRecognition:
         eating = 'eating'
         non_eating = 'non_eating'
         
-        	
+        # output directory for results
+        # should be an option?
         os.mkdir(out_dir)
 
         # @todo - delete out directory if exists
-
         for i in range (len(self.__myo_data_file_list)):
             file = self.__myo_data_file_list[i]
             if "IMU" in file:
                 if "fork" in file:
+                    # use regex to get the user id of fork IMU data
                     result = re.search('MyoData/(.*)/fork', file)
+                    # save the user id
                     imu_myo_fork_data_userid.append(result.group(1))
+                    # read the IMU data
                     imu_myo_fork_data=np.genfromtxt(file, dtype=float, delimiter=',',usecols=(1,2,3,4,5,6,7,8,9,10))
-                    # Add another column of zeros representing non eating action     
+                    # save the IMU data
                     all_imu_myo_fork_data.append(imu_myo_fork_data)
                 elif "spoon" in file:
+                    # use regex to get the user id of spoon IMU data
+                    # repeat the same steps as above for the spoon data
                     result = re.search('MyoData/(.*)/spoon', file)
                     imu_myo_spoon_data_userid.append(result.group(1))
                     imu_myo_spoon_data=np.genfromtxt(file, dtype=float, delimiter=',',usecols=(1,2,3,4,5,6,7,8,9,10))
                     all_imu_myo_spoon_data.append(imu_myo_spoon_data)
                 else:
-                    print "unknown file.continue"  
+                    print("unknown file.continue")
 
-                
+        # @todo add print flag here
+        # by default this flag should be disabled
+        # only print relevant data
         print("IMU MYO SPOON DATA USERS")
         print(imu_myo_spoon_data_userid)
         print("IMU MYO FORK DATA USERS")
         print(imu_myo_spoon_data_userid)
 
         
+        #temp1 = all_imu_myo_spoon_data[0]
+        #plt.figure(1)
+        #plt.plot(temp1[:,0])
+        #plt.plot(temp1[:,1])
+        #plt.plot(temp1[:,2])
+        #plt.ylabel('orintation')
+        #
+        #plt.figure(2)
+        #plt.plot(temp1[:,4])
+        #plt.plot(temp1[:,5])
+        #plt.plot(temp1[:,6])
+        #plt.ylabel('acceleration')
+        #plt.show()
+
         # Fork
         all_ground_truth_fork_data = []
         ground_truth_fork_data_userid = []
@@ -104,7 +124,7 @@ class ActivityRecognition:
         all_ground_truth_spoon_data = []
         ground_truth_spoon_data_userid = []
 
-        # Iterate all ground truth data
+        # Iterate the ground truth data of spoon and fork
         for i in range (len(self.__ground_truth_file_list)):
             file = self.__ground_truth_file_list[i]
             if "fork" in file:
@@ -118,7 +138,7 @@ class ActivityRecognition:
                 ground_truth_spoon_data=np.genfromtxt(file, dtype=None, delimiter=',', usecols=(0, 1))
                 all_ground_truth_spoon_data.append(ground_truth_spoon_data)
             else:
-                print "unknown file.continue"
+                print("unknown file.continue")
 
 
         print("GROUND TRUTH SPOON USERS")
@@ -138,6 +158,10 @@ class ActivityRecognition:
         for i in range (len(all_ground_truth_fork_data)):
             fork_data = all_ground_truth_fork_data[i]
             userid = ground_truth_fork_data_userid[i]
+            # Naming incossitency in the data for this project.
+            # override in thi case only
+            if userid == 'user9':
+                userid = 'user09'
             #print(userid)
             #  get the index for this user id
             for k in range (np.size(imu_myo_fork_data_userid)):
@@ -287,23 +311,6 @@ class ActivityRecognition:
         ------
         None     
         """
-        self.__data = scipy.io.loadmat (self.__data_path + "/AllSamples.mat")
-        self.__unlabeled_data = self.__data['AllSamples']
-
-        if (self.__plot == True):
-            colors = (0,0,0)
-            area = np.pi*3
-            self.__X1 = self.__unlabeled_data[:,[0]]
-            self.__X2 = self.__unlabeled_data[:,[1]]
-            plt.scatter(self.__X1, self.__X2,s=area,c=colors,alpha=0.5)
-            plt.show()
-            plt.title('Unlabled data scatter plot')
-            plt.xlabel('X1')
-            plt.ylabel('X2')
-        
-        if (self.__save == False):
-            np.savetxt("data", self.__unlabeled_data,delimiter=",")
-        
 
 
 
