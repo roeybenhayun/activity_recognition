@@ -101,11 +101,11 @@ class ActivityRecognition:
         print(self.__imu_myo_spoon_data_userid)
 
         
-        #temp1 = self.__all_imu_myo_spoon_data[0]
+        #temp1 = self.__all_imu_myo_spoon_data[17]
         #plt.figure(1)
-        #plt.plot(temp1[:,0])
         #plt.plot(temp1[:,1])
         #plt.plot(temp1[:,2])
+        #plt.plot(temp1[:,3])
         #plt.ylabel('orintation')
         #
         #plt.figure(2)
@@ -310,9 +310,111 @@ class ActivityRecognition:
         None
         """
         self.acceleration_mean()
+        self.gyro_mean()
         self.acceleration_variance()
+        self.gyro_variance()
         self.acceleration_energy()
         self.energy_spectral_density()
+
+
+    def gyro_mean(self):
+        """
+        Calculate the mean Gyro for axis x,y,z
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        mean gyro 
+        """
+        print("\n###########################################################################")
+        print("Calculate Gyro mean")
+        print("###########################################################################")
+        
+        gyro_mean_eating = np.zeros([len(self.__imu_fork_eating),4],dtype=float)
+        gyro_mean_non_eating = np.zeros([len(self.__imu_fork_non_eating),4],dtype=float) 
+        gyro_mean_spoon_eating = np.zeros([len(self.__imu_spoon_eating),4],dtype=float)
+        gyro_mean_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),4],dtype=float)
+        
+        for i in range(len(self.__imu_fork_eating)):
+            user_fork_eating = self.__imu_fork_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_fork_eating,axis = 0)
+            gyro_mean_eating[i][0] = acc_mean[3]
+            gyro_mean_eating[i][1] = acc_mean[4]
+            gyro_mean_eating[i][2] = acc_mean[5]
+            
+        # take the same number of rows
+        for i in range(len(self.__imu_fork_eating)):
+            user_fork_non_eating = self.__imu_fork_non_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_fork_non_eating,axis = 0)          
+            gyro_mean_non_eating[i][0] = acc_mean[3]
+            gyro_mean_non_eating[i][1] = acc_mean[4]
+            gyro_mean_non_eating[i][2] = acc_mean[5]
+        
+
+        plt.figure(5)
+        plt.plot(gyro_mean_eating[:,0])
+        plt.plot(gyro_mean_eating[:,1])
+        plt.plot(gyro_mean_eating[:,2])
+        plt.ylabel('Eating with fork  - gyro mean')
+        
+        plt.figure(6)
+        plt.plot(gyro_mean_non_eating[:,0])
+        plt.plot(gyro_mean_non_eating[:,1])
+        plt.plot(gyro_mean_non_eating[:,2])
+        plt.ylabel('Non Eating with fork  - gyro mean')
+
+
+        for i in range(len(self.__imu_spoon_eating)):
+            user_eating = self.__imu_spoon_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_eating,axis = 0)
+            gyro_mean_spoon_eating[i][0] = acc_mean[3]
+            gyro_mean_spoon_eating[i][1] = acc_mean[4]
+            gyro_mean_spoon_eating[i][2] = acc_mean[5]
+            
+        # take the same number of rows as in the eating with spoon 
+        for i in range(len(self.__imu_spoon_eating)):
+            user_non_eating = self.__imu_spoon_non_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_non_eating,axis = 0)          
+            gyro_mean_non_eating_spoon[i][0] = acc_mean[3]
+            gyro_mean_non_eating_spoon[i][1] = acc_mean[4]
+            gyro_mean_non_eating_spoon[i][2] = acc_mean[5]
+
+        plt.figure(7)
+        plt.plot(gyro_mean_spoon_eating[:,0])
+        plt.plot(gyro_mean_spoon_eating[:,1])
+        plt.plot(gyro_mean_spoon_eating[:,2])
+        plt.ylabel('Eating with spoon  - gyro mean')
+        
+        plt.figure(8)
+        plt.plot(gyro_mean_non_eating_spoon[:,0])
+        plt.plot(gyro_mean_non_eating_spoon[:,1])
+        plt.plot(gyro_mean_non_eating_spoon[:,2])
+        plt.ylabel('Non Eating with spoon  - gyro mean')
+        plt.show()        
+
+
+    def gyro_variance(self):
+        """
+        Calculate the mean Gyro for axis x,y,z
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        variance gyro 
+        """
+        print("\n###########################################################################")
+        print("Calculate Gyro variance")
+        print("###########################################################################")
+
+
 
 
     def acceleration_mean(self):
@@ -329,57 +431,78 @@ class ActivityRecognition:
         print("\n###########################################################################")
         print("Calculate acceleration mean")
         print("###########################################################################")
-        # iterate the eating and non eating data for all the users
-        # mean_x, mean_y, mean_z
-        # preprocessing method is a prerequisit for this step
-        #self.__imu_fork_eating = []
-        #self.__imu_spoon_eating = [] 
-        #self.__imu_fork_non_eating = []
-        #self.__imu_spoon_non_eating = []
-        
-        # x,y,z
-        acceleration_mean_eating = np.zeros([len(self.__imu_fork_eating),3],dtype=float)
-        acceleration_mean_non_eating = np.zeros([len(self.__imu_fork_non_eating),3],dtype=float)
-        
-        #acceleration_mean_spoon_eating = np.zeros([len(self.__imu_spoon_eating),3],dtype=float)
-        #acceleration_mean_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),3],dtype=float)
-        
 
+
+        acceleration_mean_eating = np.zeros([len(self.__imu_fork_eating),4],dtype=float)
+        acceleration_mean_non_eating = np.zeros([len(self.__imu_fork_non_eating),4],dtype=float) 
+        acceleration_mean_spoon_eating = np.zeros([len(self.__imu_spoon_eating),4],dtype=float)
+        acceleration_mean_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),4],dtype=float)
+        
         for i in range(len(self.__imu_fork_eating)):
             user_fork_eating = self.__imu_fork_eating[i]
-            #user_spoon_eating = self.__imu_spoon_eating[i]
-            bla = np.mean(user_fork_eating,axis = 0)
-
-            acceleration_mean_eating[i][0] = bla[4]
-            acceleration_mean_eating[i][1] = bla[5]
-            acceleration_mean_eating[i][2] = bla[6]
-            #acceleration_mean_eating[i][0] = np.mean(user_fork_eating[:,4])
-            #acceleration_mean_eating[i][1] = np.mean(user_fork_eating[:,5])
-            #acceleration_mean_eating[i][2] = np.mean(user_fork_eating[:,6])
-
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_fork_eating,axis = 0)
+            acceleration_mean_eating[i][0] = acc_mean[0]
+            acceleration_mean_eating[i][1] = acc_mean[1]
+            acceleration_mean_eating[i][2] = acc_mean[2]
+            # find the 
+            #a = np.sqrt(np.power(user_fork_eating[:,0],2) + np.power(user_fork_eating[:,1],2) + np.power(user_fork_eating[:,2],2))     
+            #acceleration_mean_eating[i][3] = np.mean(a)
+            
         # take the same number of rows
         for i in range(len(self.__imu_fork_eating)):
             user_fork_non_eating = self.__imu_fork_non_eating[i]
-            bla = np.mean(user_fork_non_eating,axis = 0)          
-            acceleration_mean_non_eating[i][0] = bla[4]
-            acceleration_mean_non_eating[i][1] = bla[5]
-            acceleration_mean_non_eating[i][2] = bla[6]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_fork_non_eating,axis = 0)          
+            acceleration_mean_non_eating[i][0] = acc_mean[0]
+            acceleration_mean_non_eating[i][1] = acc_mean[1]
+            acceleration_mean_non_eating[i][2] = acc_mean[2]
+            #a = np.sqrt(np.power(user_fork_non_eating[:,0],2) + np.power(user_fork_non_eating[:,1],2) + np.power(user_fork_non_eating[:,2],2))       
+            #acceleration_mean_non_eating[i][3] = np.mean(a) 
         
-                
-    
         plt.figure(1)
         plt.plot(acceleration_mean_eating[:,0])
         plt.plot(acceleration_mean_eating[:,1])
         plt.plot(acceleration_mean_eating[:,2])
-        plt.ylabel('Mean eating - acceleration')
-        #
+        plt.ylabel('Eating with fork  - acceleration mean')
+        
         plt.figure(2)
         plt.plot(acceleration_mean_non_eating[:,0])
         plt.plot(acceleration_mean_non_eating[:,1])
         plt.plot(acceleration_mean_non_eating[:,2])
-        plt.ylabel('Mean non eating - acceleration')
-        plt.show()
-    
+        plt.ylabel('Non Eating with fork  - acceleration mean')
+
+
+        for i in range(len(self.__imu_spoon_eating)):
+            user_eating = self.__imu_spoon_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_eating,axis = 0)
+            acceleration_mean_spoon_eating[i][0] = acc_mean[0]
+            acceleration_mean_spoon_eating[i][1] = acc_mean[1]
+            acceleration_mean_spoon_eating[i][2] = acc_mean[2]
+            
+        # take the same number of rows as in the eating with spoon 
+        for i in range(len(self.__imu_spoon_eating)):
+            user_non_eating = self.__imu_spoon_non_eating[i]
+            # calculate the mean acceleration on the x,y,z axis (columns)
+            acc_mean = np.mean(user_non_eating,axis = 0)          
+            acceleration_mean_non_eating_spoon[i][0] = acc_mean[0]
+            acceleration_mean_non_eating_spoon[i][1] = acc_mean[1]
+            acceleration_mean_non_eating_spoon[i][2] = acc_mean[2]
+
+        plt.figure(3)
+        plt.plot(acceleration_mean_spoon_eating[:,0])
+        plt.plot(acceleration_mean_spoon_eating[:,1])
+        plt.plot(acceleration_mean_spoon_eating[:,2])
+        plt.ylabel('Eating with spoon  - acceleration mean')
+        
+        plt.figure(4)
+        plt.plot(acceleration_mean_non_eating_spoon[:,0])
+        plt.plot(acceleration_mean_non_eating_spoon[:,1])
+        plt.plot(acceleration_mean_non_eating_spoon[:,2])
+        plt.ylabel('Non Eating with spoon  - acceleration mean')
+
+
     def acceleration_variance(self):
         """
         Calculate the variance acceleration for axis x,y,z
