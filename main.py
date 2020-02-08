@@ -16,6 +16,7 @@ class ActivityRecognition:
         self.__log_enabled = False
         self.__save_files = False                        
         self.__ground_truth_file_list = []
+        self.__figure_number = 0
 
         self.__orientation_axis = {"x" : 0, "y":1, "z" :2, "w" : 3}
         self.__accelerometer_axis = {"x" : 4, "y":5, "z" :6}
@@ -33,9 +34,9 @@ class ActivityRecognition:
 
         ## Mean
         # todo - replace the above with : self.__accelerometer_mean
-        self.__acceleration_mean_fork_eating = []
+        self.__acceleration_mean_eating_fork = []
         self.__acceleration_mean_non_eating_fork = []
-        self.__acceleration_mean_spoon_eating = []
+        self.__acceleration_mean_eating_spoon = []
         self.__acceleration_mean_non_eating_spoon = []
 
         # todo - replace the above with : self.__gyro_mean
@@ -45,28 +46,28 @@ class ActivityRecognition:
         self.__gyro_mean_non_eating_spoon = []
 
         # todo - replace the above with : self.__orientation_mean
-        self.__orientation_mean_fork_eating = []
+        self.__orientation_mean_eating_fork = []
         self.__orientation_mean_non_eating_fork = []
-        self.__orientation_mean_spoon_eating = []
+        self.__orientation_mean_eating_spoon = []
         self.__orientation_mean_non_eating_spoon = []
 
         ## Acceleration
         # todo - replace the above with : self.__acceleration_variance
-        self.__acceleration_variance_fork_eating = []
+        self.__acceleration_variance_eating_fork = []
         self.__acceleration_variance_non_eating_fork = []
-        self.__acceleration_variance_spoon_eating = []
+        self.__acceleration_variance_eating_spoon= []
         self.__acceleration_variance_non_eating_spoon = []
 
         # todo - replace the above with : self.__gyro_variance
-        self.__gyro_variance_fork_eating = []
+        self.__gyro_variance_eating_fork = []
         self.__gyro_variance_non_eating_fork = []
-        self.__gyro_variance_spoon_eating = []
+        self.__gyro_variance_eating_spoon = []
         self.__gyro_variance_non_eating_spoon = []
 
         # todo - replace the above with : self.__orientation_variance
-        self.__orientation_variance_fork_eating = []
+        self.__orientation_variance_eating_fork = []
         self.__orientation_variance_non_eating_fork = []
-        self.__orientation_variance_spoon_eating = []
+        self.__orientation_variance_eating_spoon = []
         self.__orientation_variance_non_eating_spoon = []
 
 
@@ -98,6 +99,10 @@ class ActivityRecognition:
     def cleanup(self):
         print ("Cleanup")
 
+    def get_number(self):
+        self.__figure_number = self.__figure_number + 1
+        return self.__figure_number
+        
     def preprocessing(self):
         
         out_dir = 'out'
@@ -145,7 +150,8 @@ class ActivityRecognition:
         if self.__plot == True:
 
             user_all_imu_data = self.__all_imu_myo_spoon_data[17]
-            plt.figure(1)
+            
+            plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,1], label='x')
             plt.plot(user_all_imu_data[:,2], label='y')
             plt.plot(user_all_imu_data[:,3], label='z')
@@ -154,8 +160,8 @@ class ActivityRecognition:
             plt.ylabel('Orientation')
             plt.xlabel('Sample')
             plt.legend()
-
-            plt.figure(2)
+            
+            plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,4], label='x')
             plt.plot(user_all_imu_data[:,5], label='y')
             plt.plot(user_all_imu_data[:,6], label='z')
@@ -164,8 +170,7 @@ class ActivityRecognition:
             plt.xlabel('Sample number')
             plt.legend()
             
-
-            plt.figure(3)
+            plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,7], label='x')
             plt.plot(user_all_imu_data[:,8], label='y')
             plt.plot(user_all_imu_data[:,9], label='z')            
@@ -395,10 +400,10 @@ class ActivityRecognition:
         print("Calculate Gyro mean of eating and non eating")
         print("###########################################################################")
         
-        orientation_mean_eating_fork = np.zeros([len(self.__imu_fork_eating),3],dtype=float)
-        orientation_mean_non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),3],dtype=float) 
-        orientation_mean_eating_spoon = np.zeros([len(self.__imu_spoon_eating),3],dtype=float)
-        orientation_mean_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),3],dtype=float)
+        orientation_mean_eating_fork = np.zeros([len(self.__imu_fork_eating),4],dtype=float)
+        orientation_mean_non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),4],dtype=float) 
+        orientation_mean_eating_spoon = np.zeros([len(self.__imu_spoon_eating),4],dtype=float)
+        orientation_mean_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),4],dtype=float)
         
         x = self.__orientation_axis.get("x")
         y = self.__orientation_axis.get("y")
@@ -446,8 +451,74 @@ class ActivityRecognition:
             self.plot_orientation_mean()
         
 
+    def orientation_variance(self):
+        """
+        Calculate the mean Orientation Variance for axis x,y,z
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        mean gyro 
+        """
+        print("\n###########################################################################")
+        print("Calculate Orientation variance of eating and non eating activities ")
+        print("###########################################################################")
+        
+        orientation_variance_eating_fork = np.zeros([len(self.__imu_fork_eating),4],dtype=float)
+        orientation_variance_non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),4],dtype=float) 
+        orientation_variance_eating_spoon = np.zeros([len(self.__imu_spoon_eating),4],dtype=float)
+        orientation_variance_non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),4],dtype=float)
+        
+        x = self.__orientation_axis.get("x")
+        y = self.__orientation_axis.get("y")
+        z = self.__orientation_axis.get("z")
+        w = self.__orientation_axis.get("w")
+
+        # calculate the mean acceleration on the x,y,z axis (columns)
+        for i in range(len(self.__imu_fork_eating)):
+            user_fork_eating = self.__imu_fork_eating[i]
+            orientation_variance = np.mean(user_fork_eating,axis = 0)
+            orientation_variance_eating_fork[i][0] = orientation_variance[x]
+            orientation_variance_eating_fork[i][1] = orientation_variance[y]
+            orientation_variance_eating_fork[i][2] = orientation_variance[z]
+            orientation_variance_eating_fork[i][3] = orientation_variance[w]
+
+            user_fork_non_eating = self.__imu_fork_non_eating[i]
+            orientation_variance = np.mean(user_fork_non_eating,axis = 0)          
+            orientation_variance_non_eating_fork[i][0] = orientation_variance[x]
+            orientation_variance_non_eating_fork[i][1] = orientation_variance[y]
+            orientation_variance_non_eating_fork[i][2] = orientation_variance[z]
+            orientation_variance_non_eating_fork[i][3] = orientation_variance[w]
+
+        # calculate the mean acceleration on the x,y,z axis (columns)
+        for i in range(len(self.__imu_spoon_eating)):
+            user_eating = self.__imu_spoon_eating[i]
+            orientation_variance = np.mean(user_eating,axis = 0)
+            orientation_variance_eating_spoon[i][0] = orientation_variance[x]
+            orientation_variance_eating_spoon[i][1] = orientation_variance[y]
+            orientation_variance_eating_spoon[i][2] = orientation_variance[z]
+            orientation_variance_eating_spoon[i][3] = orientation_variance[w]
+
+            user_non_eating = self.__imu_spoon_non_eating[i]
+            orientation_variance = np.mean(user_non_eating,axis = 0)          
+            orientation_variance_non_eating_spoon[i][0] = orientation_variance[x]
+            orientation_variance_non_eating_spoon[i][1] = orientation_variance[y]
+            orientation_variance_non_eating_spoon[i][2] = orientation_variance[z]
+            orientation_variance_non_eating_spoon[i][3] = orientation_variance[w]
+            
+        self.__orientation_variance_eating_fork = orientation_variance_eating_fork
+        self.__orientation_variance_non_eating_fork = orientation_variance_non_eating_fork
+        self.__orientation_variance_eating_spoon = orientation_variance_eating_spoon
+        self.__orientation_variance_non_eating_spoon = orientation_variance_non_eating_spoon
+
+        if self.__plot == True:
+            self.plot_orientation_variance()
+
     def plot_orientation_mean(self):
-        plt.figure(5)
+        
+        plt.figure(self.get_number())
         plt.plot(self.__orientation_mean_eating_fork[:,0], label='x')
         plt.plot(self.__orientation_mean_eating_fork[:,1], label='y')
         plt.plot(self.__orientation_mean_eating_fork[:,2], label='z')
@@ -457,7 +528,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
 
-        plt.figure(6)
+        plt.figure(self.get_number())
         plt.plot(self.__orientation_mean_non_eating_fork[:,0], label='x')
         plt.plot(self.__orientation_mean_non_eating_fork[:,1], label='y')
         plt.plot(self.__orientation_mean_non_eating_fork[:,2], label='z')
@@ -467,7 +538,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
 
-        plt.figure(7)
+        plt.figure(self.get_number())
         plt.plot(self.__orientation_mean_eating_spoon[:,0], label='x')
         plt.plot(self.__orientation_mean_eating_spoon[:,1], label='y')
         plt.plot(self.__orientation_mean_eating_spoon[:,2], label='z')
@@ -477,7 +548,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
 
-        plt.figure(8)
+        plt.figure(self.get_number())
         plt.plot(self.__orientation_mean_non_eating_spoon[:,0], label='x')
         plt.plot(self.__orientation_mean_non_eating_spoon[:,1], label='y')
         plt.plot(self.__orientation_mean_non_eating_spoon[:,2], label='z')
@@ -488,6 +559,51 @@ class ActivityRecognition:
         plt.legend()
 
         plt.show()  
+
+
+    def plot_orientation_variance(self):
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__orientation_variance_eating_fork[:,0], label='x')
+        plt.plot(self.__orientation_variance_eating_fork[:,1], label='y')
+        plt.plot(self.__orientation_variance_eating_fork[:,2], label='z')
+        plt.plot(self.__orientation_variance_eating_fork[:,3], label='w')
+        plt.title('Orientation Variance - Eating(fork)')
+        plt.ylabel('Orientation Variance')
+        plt.xlabel('Sample number')
+        plt.legend()
+
+        plt.figure(self.get_number())
+        plt.plot(self.__orientation_variance_non_eating_fork[:,0], label='x')
+        plt.plot(self.__orientation_variance_non_eating_fork[:,1], label='y')
+        plt.plot(self.__orientation_variance_non_eating_fork[:,2], label='z')
+        plt.plot(self.__orientation_variance_non_eating_fork[:,3], label='w')
+        plt.title('Orientation Variance - Non Eating(fork)')
+        plt.ylabel('Orientation Variance')
+        plt.xlabel('Sample number')
+        plt.legend()
+
+        plt.figure(self.get_number())
+        plt.plot(self.__orientation_variance_eating_spoon[:,0], label='x')
+        plt.plot(self.__orientation_variance_eating_spoon[:,1], label='y')
+        plt.plot(self.__orientation_variance_eating_spoon[:,2], label='z')
+        plt.plot(self.__orientation_variance_eating_spoon[:,3], label='w')
+        plt.title('Orientation Variance - Eating(spoon)')
+        plt.ylabel('Orientation Variance')
+        plt.xlabel('Sample number')
+        plt.legend()
+
+        plt.figure(self.get_number())
+        plt.plot(self.__orientation_variance_non_eating_spoon[:,0], label='x')
+        plt.plot(self.__orientation_variance_non_eating_spoon[:,1], label='y')
+        plt.plot(self.__orientation_variance_non_eating_spoon[:,2], label='z')
+        plt.plot(self.__orientation_variance_non_eating_spoon[:,3], label='w')
+        plt.title('Orientation Variance - Non Eating(spoon)')
+        plt.ylabel('Orientation Variance')
+        plt.xlabel('Sample number')
+        plt.legend()
+
+        plt.show()         
 
     def gyro_mean(self):
         """
@@ -609,9 +725,9 @@ class ActivityRecognition:
             gyro_variance_non_eating_spoon[i][1] = gyro_variance[y]
             gyro_variance_non_eating_spoon[i][2] = gyro_variance[z]
 
-        self.__gyro_variance_fork_eating = gyro_variance_fork_eating
+        self.__gyro_variance_eating_fork = gyro_variance_fork_eating
         self.__gyro_variance_non_eating_fork = gyro_variance_non_eating_fork
-        self.__gyro_variance_spoon_eating = gyro_variance_spoon_eating
+        self.__gyro_variance_eating_spoon = gyro_variance_spoon_eating
         self.__gyro_variance_non_eating_spoon = gyro_variance_non_eating_spoon
         
         if self.__plot == True:
@@ -621,17 +737,17 @@ class ActivityRecognition:
 
 
     def plot_gyro_mean(self):
-        plt.figure(5)
+        
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_mean_eating_fork[:,0], label='x')
         plt.plot(self.__gyro_mean_eating_fork[:,1], label='y')
         plt.plot(self.__gyro_mean_eating_fork[:,2], label='z')
         plt.title('Gyroscope Mean - Eating(fork)')
         plt.ylabel('Gyroscope Mean')
         plt.xlabel('Sample number')
-        plt.legend()
-
+        plt.legend()        
         
-        plt.figure(6)
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_mean_non_eating_fork[:,0], label='x')
         plt.plot(self.__gyro_mean_non_eating_fork[:,1], label='y')
         plt.plot(self.__gyro_mean_non_eating_fork[:,2], label='z')
@@ -639,8 +755,8 @@ class ActivityRecognition:
         plt.ylabel('Gyroscope Mean')
         plt.xlabel('Sample number')
         plt.legend()
-
-        plt.figure(7)
+        
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_mean_eating_spoon[:,0], label='x')
         plt.plot(self.__gyro_mean_eating_spoon[:,1], label='y')
         plt.plot(self.__gyro_mean_eating_spoon[:,2], label='z')
@@ -649,7 +765,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         
-        plt.figure(8)
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_mean_non_eating_spoon[:,0], label='x')
         plt.plot(self.__gyro_mean_non_eating_spoon[:,1], label='y')
         plt.plot(self.__gyro_mean_non_eating_spoon[:,2], label='z')
@@ -661,17 +777,17 @@ class ActivityRecognition:
         
 
     def plot_gyro_variance(self):
-        plt.figure(5)
-        plt.plot(self.__gyro_variance_fork_eating[:,0], label='x')
-        plt.plot(self.__gyro_variance_fork_eating[:,1], label='y')
-        plt.plot(self.__gyro_variance_fork_eating[:,2], label='z')
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__gyro_variance_eating_fork[:,0], label='x')
+        plt.plot(self.__gyro_variance_eating_fork[:,1], label='y')
+        plt.plot(self.__gyro_variance_eating_fork[:,2], label='z')
         plt.title('Gyroscope Variance - Eating(fork)')
         plt.ylabel('Gyroscope Variance')
         plt.xlabel('Sample number')
         plt.legend()
         
-
-        plt.figure(6)
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_variance_non_eating_fork[:,0], label='x')
         plt.plot(self.__gyro_variance_non_eating_fork[:,1], label='y')
         plt.plot(self.__gyro_variance_non_eating_fork[:,2], label='z')
@@ -680,17 +796,16 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
 
-
-        plt.figure(7)
-        plt.plot(self.__gyro_variance_spoon_eating[:,0], label='x')
-        plt.plot(self.__gyro_variance_spoon_eating[:,1], label='y')
-        plt.plot(self.__gyro_variance_spoon_eating[:,2], label='z')
+        plt.figure(self.get_number())
+        plt.plot(self.__gyro_variance_eating_spoon[:,0], label='x')
+        plt.plot(self.__gyro_variance_eating_spoon[:,1], label='y')
+        plt.plot(self.__gyro_variance_eating_spoon[:,2], label='z')
         plt.title('Gyroscope Variance - Eating(spoon)')
         plt.ylabel('Gyroscope Variance')
         plt.xlabel('Sample number')        
         plt.legend()
         
-        plt.figure(8)
+        plt.figure(self.get_number())
         plt.plot(self.__gyro_variance_non_eating_spoon[:,0], label='x')
         plt.plot(self.__gyro_variance_non_eating_spoon[:,1], label='y')
         plt.plot(self.__gyro_variance_non_eating_spoon[:,2], label='z')
@@ -702,16 +817,17 @@ class ActivityRecognition:
 
 
     def plot_acceleration_mean(self):
-        plt.figure(1)
-        plt.plot(self.__acceleration_mean_fork_eating[:,0], label='x')
-        plt.plot(self.__acceleration_mean_fork_eating[:,1], label='y')
-        plt.plot(self.__acceleration_mean_fork_eating[:,2], label='z')
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__acceleration_mean_eating_fork[:,0], label='x')
+        plt.plot(self.__acceleration_mean_eating_fork[:,1], label='y')
+        plt.plot(self.__acceleration_mean_eating_fork[:,2], label='z')
         plt.title('Acceleration Mean - Eating(fork)')
         plt.ylabel('Acceleration Mean')
         plt.xlabel('Sample number')
         plt.legend()
         
-        plt.figure(2)
+        plt.figure(self.get_number())
         plt.plot(self.__acceleration_mean_non_eating_fork[:,0], label='x')
         plt.plot(self.__acceleration_mean_non_eating_fork[:,1], label='y')
         plt.plot(self.__acceleration_mean_non_eating_fork[:,2], label='z')
@@ -721,16 +837,16 @@ class ActivityRecognition:
         plt.legend()
 
 
-        plt.figure(3)
-        plt.plot(self.__acceleration_mean_spoon_eating[:,0], label='x')
-        plt.plot(self.__acceleration_mean_spoon_eating[:,1], label='y')
-        plt.plot(self.__acceleration_mean_spoon_eating[:,2], label='z')
+        plt.figure(self.get_number())
+        plt.plot(self.__acceleration_mean_eating_spoon[:,0], label='x')
+        plt.plot(self.__acceleration_mean_eating_spoon[:,1], label='y')
+        plt.plot(self.__acceleration_mean_eating_spoon[:,2], label='z')
         plt.title('Acceleration Mean - Eating(spoon)')
         plt.ylabel('Acceleration Mean')
         plt.xlabel('Sample number')
         plt.legend()
         
-        plt.figure(4)
+        plt.figure(self.get_number())
         plt.plot(self.__acceleration_mean_non_eating_spoon[:,0], label='x')
         plt.plot(self.__acceleration_mean_non_eating_spoon[:,1], label='y')
         plt.plot(self.__acceleration_mean_non_eating_spoon[:,2], label='z')
@@ -741,16 +857,17 @@ class ActivityRecognition:
 
 
     def plot_acceleration_variance(self):
-        plt.figure(10)
-        plt.plot(self.__acceleration_variance_fork_eating[:,0], label='x')
-        plt.plot(self.__acceleration_variance_fork_eating[:,1], label='y')
-        plt.plot(self.__acceleration_variance_fork_eating[:,2], label='z')
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__acceleration_variance_eating_fork[:,0], label='x')
+        plt.plot(self.__acceleration_variance_eating_fork[:,1], label='y')
+        plt.plot(self.__acceleration_variance_eating_fork[:,2], label='z')
         plt.title('Acceleration Variance - Eating(fork)')
         plt.ylabel('Acceleration Variance')
         plt.xlabel('Sample number')
         plt.legend()
-        
-        plt.figure(20)
+                
+        plt.figure(self.get_number())
         plt.plot(self.__acceleration_variance_non_eating_fork[:,0], label='x')
         plt.plot(self.__acceleration_variance_non_eating_fork[:,1], label='y')
         plt.plot(self.__acceleration_variance_non_eating_fork[:,2], label='z')
@@ -760,16 +877,16 @@ class ActivityRecognition:
         plt.legend()
 
 
-        plt.figure(30)
-        plt.plot(self.__acceleration_variance_spoon_eating[:,0], label='x')
-        plt.plot(self.__acceleration_variance_spoon_eating[:,1], label='y')
-        plt.plot(self.__acceleration_variance_spoon_eating[:,2], label='z')
+        plt.figure(self.get_number())        
+        plt.plot(self.__acceleration_variance_eating_spoon[:,0], label='x')
+        plt.plot(self.__acceleration_variance_eating_spoon[:,1], label='y')
+        plt.plot(self.__acceleration_variance_eating_spoon[:,2], label='z')
         plt.title('Acceleration Variance - Eating(spoon)')
         plt.ylabel('Acceleration Variance')
         plt.xlabel('Sample number')
         plt.legend()
         
-        plt.figure(40)
+        plt.figure(self.get_number())
         plt.plot(self.__acceleration_variance_non_eating_spoon[:,0], label='x')
         plt.plot(self.__acceleration_variance_non_eating_spoon[:,1], label='y')
         plt.plot(self.__acceleration_variance_non_eating_spoon[:,2], label='z')
@@ -831,9 +948,9 @@ class ActivityRecognition:
             acceleration_mean_non_eating_spoon[i][1] = acc_mean[y]
             acceleration_mean_non_eating_spoon[i][2] = acc_mean[z]
 
-        self.__acceleration_mean_fork_eating = acceleration_mean_fork_eating
+        self.__acceleration_mean_eating_fork = acceleration_mean_fork_eating
         self.__acceleration_mean_non_eating_fork = acceleration_mean_non_eating_fork
-        self.__acceleration_mean_spoon_eating = acceleration_mean_spoon_eating
+        self.__acceleration_mean_eating_spoon = acceleration_mean_spoon_eating
         self.__acceleration_mean_non_eating_spoon = acceleration_mean_non_eating_spoon
         
         if self.__plot == True:
@@ -892,9 +1009,9 @@ class ActivityRecognition:
             acceleration_variance_non_eating_spoon[i][1] = acc_variance[y]
             acceleration_variance_non_eating_spoon[i][2] = acc_variance[z]
 
-        self.__acceleration_variance_fork_eating = acceleration_variance_fork_eating
+        self.__acceleration_variance_eating_fork = acceleration_variance_fork_eating
         self.__acceleration_variance_non_eating_fork = acceleration_variance_non_eating_fork
-        self.__acceleration_variance_spoon_eating = acceleration_variance_spoon_eating
+        self.__acceleration_variance_eating_spoon= acceleration_variance_spoon_eating
         self.__acceleration_variance_non_eating_spoon = acceleration_variance_non_eating_spoon
         
         if self.__plot == True:
