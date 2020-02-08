@@ -2,3 +2,5 @@ Data_Mining_Assign1Data/*
 .DS_Store
 .vscode/*
 out/*
+figures/*
+*.png
