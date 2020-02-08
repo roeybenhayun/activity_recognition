@@ -13,7 +13,7 @@ class ActivityRecognition:
         self.__data_dir_path = ground_truth_dir_path
         self.__plot = True
         self.__save = False
-
+        self.__show_plot = False
         self.__log_enabled = False
         self.__save_files = False                        
         self.__ground_truth_file_list = []
@@ -167,9 +167,7 @@ class ActivityRecognition:
 
         
         if self.__plot == True:
-
-            user_all_imu_data = self.__all_imu_myo_spoon_data[17]
-            
+            user_all_imu_data = self.__all_imu_myo_spoon_data[17]  
             plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,1], label='x')
             plt.plot(user_all_imu_data[:,2], label='y')
@@ -399,10 +397,14 @@ class ActivityRecognition:
         ------
         None
         """        
+        self.rms()
         self.mean()
         self.variance()
-        self.rms()
-        self.energy_spectral_density()
+        #self.fft()
+        #self.min()
+        #self.max()
+        
+        #self.energy_spectral_density()
         #self.acceleration_mean()
         #self.acceleration_variance()
         #self.gyro_mean()        
@@ -665,8 +667,10 @@ class ActivityRecognition:
         plt.title('Orientation Mean - Eating(fork)')
         plt.ylabel('Orientation Mean')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number)+ '_' + 'Orientation Mean - Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number)+ '_' + 'Orientation Mean - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__mean_non_eating_fork[:,0], label='x')
@@ -676,8 +680,10 @@ class ActivityRecognition:
         plt.title('Orientation Mean - Non Eating(fork)')
         plt.ylabel('Orientation Mean')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Mean - Non Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Mean - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__mean_eating_spoon[:,0], label='x')
@@ -687,8 +693,10 @@ class ActivityRecognition:
         plt.title('Orientation Mean - Eating(spoon)')
         plt.ylabel('Orientation Mean')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Mean - Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Mean - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__mean_non_eating_spoon[:,0], label='x')
@@ -698,10 +706,13 @@ class ActivityRecognition:
         plt.title('Orientation Mean - Non Eating(spoon)')
         plt.ylabel('Orientation Mean')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number)+ '_' + 'Orientation Mean - Non Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number)+ '_' + 'Orientation Mean - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
-        plt.show()  
+        if self.__show_plot == True:
+            plt.show()   
 
 
     def plot_orientation_variance(self):
@@ -714,8 +725,9 @@ class ActivityRecognition:
         plt.title('Orientation Variance - Eating(fork)')
         plt.ylabel('Orientation Variance')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
 
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_fork[:,0], label='x')
@@ -725,8 +737,10 @@ class ActivityRecognition:
         plt.title('Orientation Variance - Non Eating(fork)')
         plt.ylabel('Orientation Variance')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Non Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__variance_eating_spoon[:,0], label='x')
@@ -736,8 +750,10 @@ class ActivityRecognition:
         plt.title('Orientation Variance - Eating(spoon)')
         plt.ylabel('Orientation Variance')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_spoon[:,0], label='x')
@@ -747,10 +763,13 @@ class ActivityRecognition:
         plt.title('Orientation Variance - Non Eating(spoon)')
         plt.ylabel('Orientation Variance')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Non Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation Variance - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
-        plt.show()       
+        if self.__show_plot == True:
+            plt.show()       
 
 
 
@@ -764,8 +783,10 @@ class ActivityRecognition:
         plt.title('Orientation RMS - Eating(fork)')
         plt.ylabel('Orientation RMS')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_fork[:,0], label='x')
@@ -775,8 +796,10 @@ class ActivityRecognition:
         plt.title('Orientation RMS - Non Eating(fork)')
         plt.ylabel('Orientation RMS')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Non Eating(fork)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__rms_eating_spoon[:,0], label='x')
@@ -786,8 +809,10 @@ class ActivityRecognition:
         plt.title('Orientation RMS - Eating(spoon)')
         plt.ylabel('Orientation RMS')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_spoon[:,0], label='x')
@@ -797,10 +822,13 @@ class ActivityRecognition:
         plt.title('Orientation RMS - Non Eating(spoon)')
         plt.ylabel('Orientation RMS')
         plt.xlabel('Sample number')
-        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Non Eating(spoon)'+".png")
         plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation RMS - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
 
-        plt.show() 
+        if self.__show_plot == True:
+            plt.show() 
 
     def gyro_mean(self):
         """
@@ -931,7 +959,7 @@ class ActivityRecognition:
             self.plot_gyro_variance() 
 
 
-    def plot_rms(self):        
+    def plot_rms(self):
         self.plot_orientation_rms()
         self.plot_acceleration_rms()        
         self.plot_gyro_rms()
@@ -961,6 +989,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()        
         plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope Mean - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__mean_non_eating_fork[:,7], label='x')
@@ -971,6 +1000,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope Mean - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__mean_eating_spoon[:,7], label='x')
@@ -981,17 +1011,21 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope Mean - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
-        plt.plot(self.__maen_non_eating_spoon[:,7], label='x')
-        plt.plot(self.__maen_non_eating_spoon[:,8], label='y')
-        plt.plot(self.__maen_non_eating_spoon[:,9], label='z')
+        plt.plot(self.__mean_non_eating_spoon[:,7], label='x')
+        plt.plot(self.__mean_non_eating_spoon[:,8], label='y')
+        plt.plot(self.__mean_non_eating_spoon[:,9], label='z')
         plt.title('Gyroscope Mean - Non Eating(spoon)')
         plt.ylabel('Gyroscope Mean')
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope Mean - Non Eating(spoon)'+".png")
-        plt.show()
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
         
 
     def plot_gyro_variance(self):
@@ -1005,6 +1039,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope Variance - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_fork[:,7], label='x')
@@ -1015,6 +1050,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope Variance - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
 
         plt.figure(self.get_number())
         plt.plot(self.__variance_eating_spoon[:,7], label='x')
@@ -1025,6 +1061,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope Variance - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_spoon[:,7], label='x')
@@ -1035,7 +1072,10 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope Variance - Non Eating(spoon)'+".png")
-        plt.show()           
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show()           
 
 
     def plot_gyro_rms(self):
@@ -1049,7 +1089,8 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope RMS - Eating(fork)'+".png")
-        
+        plt.close(self.__figure_number)
+
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_fork[:,7], label='x')
         plt.plot(self.__rms_non_eating_fork[:,8], label='y')
@@ -1059,6 +1100,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope RMS - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
 
         plt.figure(self.get_number())
         plt.plot(self.__rms_eating_spoon[:,7], label='x')
@@ -1069,7 +1111,8 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope RMS - Eating(spoon)'+".png")
-        
+        plt.close(self.__figure_number)
+
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_spoon[:,7], label='x')
         plt.plot(self.__rms_non_eating_spoon[:,8], label='y')
@@ -1079,7 +1122,10 @@ class ActivityRecognition:
         plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope RMS - Non Eating(spoon)'+".png")
-        plt.show()     
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
 
 
     def plot_acceleration_mean(self):
@@ -1093,6 +1139,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Mean - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__mean_non_eating_fork[:,4], label='x')
@@ -1103,6 +1150,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Mean - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
 
 
         plt.figure(self.get_number())
@@ -1114,6 +1162,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Acceleration Mean - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__mean_non_eating_spoon[:,4], label='x')
@@ -1124,6 +1173,10 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Mean - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        if self.__show_plot == True:
+            plt.show() 
 
 
     def plot_acceleration_variance(self):
@@ -1137,6 +1190,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Variance - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
                 
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_fork[:,4], label='x')
@@ -1147,6 +1201,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number)+ '_' + 'Acceleration Variance - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
 
 
         plt.figure(self.get_number())        
@@ -1158,6 +1213,7 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Variance - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__variance_non_eating_spoon[:,4], label='x')
@@ -1168,6 +1224,10 @@ class ActivityRecognition:
         plt.xlabel('Sample number')
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration Variance - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
 
 
     def plot_acceleration_rms(self):        
@@ -1177,9 +1237,10 @@ class ActivityRecognition:
         plt.plot(self.__rms_eating_fork[:,6], label='z')
         plt.title('Acceleration RMS - Eating(fork)')
         plt.ylabel('Acceleration RMS')
-        plt.xlabel('Sample number')
-        plt.legend()
+        plt.xlabel('Sample number') 
+        plt.legend()       
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration RMS - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
                 
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_fork[:,4], label='x')
@@ -1187,10 +1248,11 @@ class ActivityRecognition:
         plt.plot(self.__rms_non_eating_fork[:,6], label='z')
         plt.title('Acceleration RMS - Non Eating(fork)')
         plt.ylabel('Acceleration RMS')
-        plt.xlabel('Sample number')
-        plt.legend()
+        plt.xlabel('Sample number')     
+        plt.legend()  
         plt.savefig(str(self.__figure_number)+ '_' + 'Acceleration RMS - Non Eating(fork)'+".png")
-
+        
+        plt.close(self.__figure_number)
 
         plt.figure(self.get_number())        
         plt.plot(self.__rms_eating_spoon[:,4], label='x')
@@ -1198,9 +1260,11 @@ class ActivityRecognition:
         plt.plot(self.__rms_eating_spoon[:,6], label='z')
         plt.title('Acceleration RMS - Eating(spoon)')
         plt.ylabel('Acceleration RMS')
-        plt.xlabel('Sample number')
+        plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration RMS - Eating(spoon)'+".png")
+        
+        plt.close(self.__figure_number)
         
         plt.figure(self.get_number())
         plt.plot(self.__rms_non_eating_spoon[:,4], label='x')
@@ -1208,9 +1272,14 @@ class ActivityRecognition:
         plt.plot(self.__rms_non_eating_spoon[:,6], label='z')
         plt.title('Acceleration RMS - Non Eating(spoon)')
         plt.ylabel('Acceleration RMS')
-        plt.xlabel('Sample number')
+        plt.xlabel('Sample number')        
         plt.legend()
         plt.savefig(str(self.__figure_number) + '_' + 'Acceleration RMS - Non Eating(spoon)'+".png")
+        
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
 
 
     def acceleration_mean(self):
