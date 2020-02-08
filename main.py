@@ -89,6 +89,24 @@ class ActivityRecognition:
         self.__rms_eating_spoon= []
         self.__rms_non_eating_spoon = []
         
+        #FFT
+        self.__fft_eating_fork = []
+        self.__fft_non_eating_fork = []
+        self.__fft_eating_spoon= []
+        self.__fft_non_eating_spoon = []
+
+        # MAX
+        self.__min_eating_fork = []
+        self.__min_non_eating_fork = []
+        self.__min_eating_spoon= []
+        self.__min_non_eating_spoon = []
+
+        # MIN
+        self.__max_eating_fork = []
+        self.__max_non_eating_fork = []
+        self.__max_eating_spoon= []
+        self.__max_non_eating_spoon = []
+
 
 
         print(os.path.realpath(__file__))
@@ -401,6 +419,7 @@ class ActivityRecognition:
         self.mean()
         self.variance()
         #self.fft()
+        #self.fft()
         #self.min()
         #self.max()
         
@@ -525,6 +544,44 @@ class ActivityRecognition:
         if self.__plot == True:
             self.plot_variance()
           
+    def fft(self):
+
+        print("\n###########################################################################")
+        print("Calculate FFT of eating and non eating")
+        print("###########################################################################")
+        
+        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
+        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
+        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
+        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
+        
+        t1 = self.__imu_fork_eating
+
+        for i in range(len(self.__imu_fork_eating)):
+            eating = self.__imu_fork_eating[i]
+            fft = np.fft.fft(eating,axis = 0)
+            t1[i] = fft
+
+            #non_eating = self.__imu_fork_non_eating[i]
+            #fft = np.fft.fft(non_eating,axis = 0)
+            #non_eating_fork[i] = fft
+#
+            #eating = self.__imu_spoon_eating[i]
+            #fft = np.fft.fft(eating,axis = 0)
+            #eating_spoon[i] = fft
+#
+            #non_eating = self.__imu_spoon_non_eating[i]
+            #fft = np.fft.fft(non_eating,axis = 0)
+            #non_eating_spoon[i] = fft
+            
+        self.__fft_eating_fork = eating_fork
+        self.__fft_non_eating_fork = non_eating_fork
+        self.__fft_eating_spoon = eating_spoon
+        self.__fft_non_eating_spoon = non_eating_spoon
+
+        if self.__plot == True:
+            self.plot_fft()
+
 
     def orientation_mean(self):
         """
@@ -772,6 +829,16 @@ class ActivityRecognition:
             plt.show()       
 
 
+    def plot_rms__(self):
+        fetaure = 'RMS'
+        sensor = ["Orientation","Acceleration", "Gyro"]
+        activity = ["Eating(fork)","Non Eating(fork)","Eating(spoon)","Non Eating(spoon)"]
+        print ("foo")
+        #for i in len(sensor):
+        #    sensor_type = sensor[i]
+        #    for j in len(activity):
+        #        activity_type  = activity[i]
+
 
     def plot_orientation_rms(self):
         
@@ -959,6 +1026,11 @@ class ActivityRecognition:
             self.plot_gyro_variance() 
 
 
+    def plot_fft(self):
+        self.plot_orientation_fft()
+        self.plot_acceleration_fft()        
+        self.plot_gyro_fft()
+
     def plot_rms(self):
         self.plot_orientation_rms()
         self.plot_acceleration_rms()        
@@ -974,6 +1046,170 @@ class ActivityRecognition:
         self.plot_acceleration_variance()
         self.plot_gyro_variance()
         
+#################
+
+    def plot_orientation_fft(self):    
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_fork[:,0], label='x')
+        plt.plot(self.__fft_eating_fork[:,1], label='y')
+        plt.plot(self.__fft_eating_fork[:,2], label='z')
+        plt.plot(self.__fft_eating_fork[:,3], label='w')
+        plt.title('Orientation FFT - Eating(fork)')
+        plt.ylabel('Orientation FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation FFT - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_fork[:,0], label='x')
+        plt.plot(self.__fft_non_eating_fork[:,1], label='y')
+        plt.plot(self.__fft_non_eating_fork[:,2], label='z')
+        plt.plot(self.__fft_non_eating_fork[:,3], label='w')
+        plt.title('Orientation FFT - Non Eating(fork)')
+        plt.ylabel('Orientation FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation FFT - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_spoon[:,0], label='x')
+        plt.plot(self.__fft_eating_spoon[:,1], label='y')
+        plt.plot(self.__fft_eating_spoon[:,2], label='z')
+        plt.plot(self.__fft_eating_spoon[:,3], label='w')
+        plt.title('Orientation FFT - Eating(spoon)')
+        plt.ylabel('Orientation FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation FFT - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_spoon[:,0], label='x')
+        plt.plot(self.__fft_non_eating_spoon[:,1], label='y')
+        plt.plot(self.__fft_non_eating_spoon[:,2], label='z')
+        plt.plot(self.__fft_non_eating_spoon[:,3], label='w')
+        plt.title('Orientation FFT - Non Eating(spoon)')
+        plt.ylabel('Orientation FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation FFT - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        if self.__show_plot == True:
+            plt.show() 
+
+    def plot_acceleration_fft(self):
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_fork[:,4], label='x')
+        plt.plot(self.__fft_eating_fork[:,5], label='y')
+        plt.plot(self.__fft_eating_fork[:,6], label='z')
+        plt.title('Acceleration FFT - Eating(fork)')
+        plt.ylabel('Acceleration FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration FFT - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_fork[:,4], label='x')
+        plt.plot(self.__fft_non_eating_fork[:,5], label='y')
+        plt.plot(self.__fft_non_eating_fork[:,6], label='z')
+        plt.title('Acceleration FFT - Non Eating(fork)')
+        plt.ylabel('Acceleration FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration FFT - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+
+
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_spoon[:,4], label='x')
+        plt.plot(self.__fft_eating_spoon[:,5], label='y')
+        plt.plot(self.__fft_eating_spoon[:,6], label='z')
+        plt.title('Acceleration FFT - Eating(spoon)')
+        plt.ylabel('Acceleration FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number)+ '_' + 'Acceleration FFT - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_spoon[:,4], label='x')
+        plt.plot(self.__fft_non_eating_spoon[:,5], label='y')
+        plt.plot(self.__fft_non_eating_spoon[:,6], label='z')
+        plt.title('Acceleration FFT - Non Eating(spoon)')
+        plt.ylabel('Acceleration FFT')
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration FFT - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        if self.__show_plot == True:
+            plt.show() 
+
+    def plot_gyro_fft(self):
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_fork[:,7], label='x')
+        plt.plot(self.__fft_eating_fork[:,8], label='y')
+        plt.plot(self.__fft_eating_fork[:,9], label='z')
+        plt.title('Gyroscope FFT - Eating(fork)')
+        plt.ylabel('Gyroscope FFT')
+        plt.xlabel('Sample number')        
+        plt.legend()        
+        plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope FFT - Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_fork[:,7], label='x')
+        plt.plot(self.__fft_non_eating_fork[:,8], label='y')
+        plt.plot(self.__fft_non_eating_fork[:,9], label='z')
+        plt.title('Gyroscope FFT - Non Eating(fork)')
+        plt.ylabel('Gyroscope FFT')
+        plt.xlabel('Sample number')        
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope FFT - Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_eating_spoon[:,7], label='x')
+        plt.plot(self.__fft_eating_spoon[:,8], label='y')
+        plt.plot(self.__fft_eating_spoon[:,9], label='z')
+        plt.title('Gyroscope FFT - Eating(spoon)')
+        plt.ylabel('Gyroscope FFT')
+        plt.xlabel('Sample number')        
+        plt.legend()
+        plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope FFT - Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(self.__fft_non_eating_spoon[:,7], label='x')
+        plt.plot(self.__fft_non_eating_spoon[:,8], label='y')
+        plt.plot(self.__fft_non_eating_spoon[:,9], label='z')
+        plt.title('Gyroscope FFT - Non Eating(spoon)')
+        plt.ylabel('Gyroscope FFT')
+        plt.xlabel('Sample number')        
+        plt.legend()
+        plt.savefig(str(self.__figure_number)+ '_' + 'Gyroscope FFT - Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
+        
+
+
+
+
+################
+
+
+
 
 
 
