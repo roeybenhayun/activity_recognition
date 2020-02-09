@@ -5,7 +5,7 @@ import os
 import math
 from tempfile import TemporaryFile
 import re
-
+from sklearn.decomposition import PCA
 
 
 class ActivityRecognition:
@@ -23,7 +23,6 @@ class ActivityRecognition:
         self.__accelerometer_axis = {"x" : 4, "y":5, "z" :6}
         self.__gyro_axis = {"x" : 7, "y":8, "z" :9}
     
-
         self.__all_imu_myo_fork_data = []
         self.__imu_myo_fork_data_userid = []
         self.__all_imu_myo_spoon_data = []
@@ -32,44 +31,6 @@ class ActivityRecognition:
         self.__imu_fork_non_eating = []
         self.__imu_spoon_eating = []
         self.__imu_spoon_non_eating = []
-
-        ## Mean
-        # todo - replace the above with : self.__accelerometer_mean
-        self.__acceleration_mean_eating_fork = []
-        self.__acceleration_mean_non_eating_fork = []
-        self.__acceleration_mean_eating_spoon = []
-        self.__acceleration_mean_non_eating_spoon = []
-
-        # todo - replace the above with : self.__gyro_mean
-        self.__gyro_mean_eating_fork = []
-        self.__gyro_mean_non_eating_fork = []
-        self.__gyro_mean_eating_spoon = []
-        self.__gyro_mean_non_eating_spoon = []
-
-        # todo - replace the above with : self.__orientation_mean
-        self.__orientation_mean_eating_fork = []
-        self.__orientation_mean_non_eating_fork = []
-        self.__orientation_mean_eating_spoon = []
-        self.__orientation_mean_non_eating_spoon = []
-
-        ## Acceleration
-        # todo - replace the above with : self.__acceleration_variance
-        self.__acceleration_variance_eating_fork = []
-        self.__acceleration_variance_non_eating_fork = []
-        self.__acceleration_variance_eating_spoon= []
-        self.__acceleration_variance_non_eating_spoon = []
-
-        # todo - replace the above with : self.__gyro_variance
-        self.__gyro_variance_eating_fork = []
-        self.__gyro_variance_non_eating_fork = []
-        self.__gyro_variance_eating_spoon = []
-        self.__gyro_variance_non_eating_spoon = []
-
-        # todo - replace the above with : self.__orientation_variance
-        self.__orientation_variance_eating_fork = []
-        self.__orientation_variance_non_eating_fork = []
-        self.__orientation_variance_eating_spoon = []
-        self.__orientation_variance_non_eating_spoon = []
 
         # MEAN
         self.__mean_eating_fork = []
@@ -87,13 +48,7 @@ class ActivityRecognition:
         self.__rms_eating_fork = []
         self.__rms_non_eating_fork = []
         self.__rms_eating_spoon= []
-        self.__rms_non_eating_spoon = []
-        
-        #FFT
-        self.__fft_eating_fork = []
-        self.__fft_non_eating_fork = []
-        self.__fft_eating_spoon= []
-        self.__fft_non_eating_spoon = []
+        self.__rms_non_eating_spoon = [] 
 
         # MAX
         self.__min_eating_fork = []
@@ -424,7 +379,7 @@ class ActivityRecognition:
         self.variance()
         self.min()
         self.max()
-        #self.fft()
+        
         
 
     def rms(self):
@@ -613,57 +568,7 @@ class ActivityRecognition:
         if self.__plot == True:
             self.plot_max()
 
-        
-          
-    def fft(self):
 
-        print("\n###########################################################################")
-        print("Calculate FFT of eating and non eating")
-        print("###########################################################################")
-        
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
-        
-        t1 = self.__imu_fork_eating
-
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            fft = np.fft.fft(eating,axis = 0)
-            t1[i] = fft
-
-            #non_eating = self.__imu_fork_non_eating[i]
-            #fft = np.fft.fft(non_eating,axis = 0)
-            #non_eating_fork[i] = fft
-#
-            #eating = self.__imu_spoon_eating[i]
-            #fft = np.fft.fft(eating,axis = 0)
-            #eating_spoon[i] = fft
-#
-            #non_eating = self.__imu_spoon_non_eating[i]
-            #fft = np.fft.fft(non_eating,axis = 0)
-            #non_eating_spoon[i] = fft
-            
-        self.__fft_eating_fork = eating_fork
-        self.__fft_non_eating_fork = non_eating_fork
-        self.__fft_eating_spoon = eating_spoon
-        self.__fft_non_eating_spoon = non_eating_spoon
-
-        if self.__plot == True:
-            self.plot_fft()
-
-
-
-    def plot_fft(self):
-        feture='FFT'        
-        #self.plot_orientation(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)
-        #self.plot_acceleration(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)        
-        #self.plot_gyro(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)
-
-        #self.plot_orientation_fft()
-        #self.plot_acceleration_fft()        
-        #self.plot_gyro_fft()
     
     def create_plot_dir(self):
         plots_dir_path = self.__plots_dir + '/' + 'RMS' + '/'
@@ -873,13 +778,64 @@ class ActivityRecognition:
         if self.__show_plot == True:
             plt.show() 
 
+    def pca(self):
+        print("PCA")
+        
+        feature_matrix = np.hstack\
+            ((self.__mean_eating_fork,\
+            self.__variance_eating_fork, \
+            self.__rms_eating_fork, \
+            self.__min_eating_fork, \
+            self.__max_eating_fork, \
+            self.__mean_non_eating_fork, \
+            self.__variance_non_eating_fork, \
+            self.__rms_non_eating_fork, \
+            self.__min_non_eating_fork, \
+            self.__max_non_eating_fork))
+
+        pca = PCA(5)
+        pca.fit(feature_matrix)
+        print(pca.components_)
+        print(pca.explained_variance_)
+
+        # # MEAN
+        #self.__mean_eating_fork = []
+        #self.__mean_non_eating_fork = []
+        #self.__mean_eating_spoon= []
+        #self.__maen_non_eating_spoon = []
+#
+        ## VAR
+        #self.__variance_eating_fork = []
+        #self.__variance_non_eating_fork = []
+        #self.__variance_eating_spoon= []
+        #self.__variance_non_eating_spoon = []
+#
+        ## RMS
+        #self.__rms_eating_fork = []
+        #self.__rms_non_eating_fork = []
+        #self.__rms_eating_spoon= []
+        #self.__rms_non_eating_spoon = [] 
+#
+        ## MAX
+        #self.__min_eating_fork = []
+        #self.__min_non_eating_fork = []
+        #self.__min_eating_spoon= []
+        #self.__min_non_eating_spoon = []
+#
+        ## MIN
+        #self.__max_eating_fork = []
+        #self.__max_non_eating_fork = []
+        #self.__max_eating_spoon= []
+        #self.__max_non_eating_spoon = []
+
+
 
 def main():        
 
     activityRecognition = ActivityRecognition()
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
-    #activityRecognition.pca()
+    activityRecognition.pca()
 
 if __name__ == "__main__":
     main()
