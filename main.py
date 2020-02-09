@@ -1027,25 +1027,202 @@ class ActivityRecognition:
 
 
     def plot_fft(self):
-        self.plot_orientation_fft()
-        self.plot_acceleration_fft()        
-        self.plot_gyro_fft()
+        feture='FFT'        
+        #self.plot_orientation(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)
+        #self.plot_acceleration(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)        
+        #self.plot_gyro(feture,self.__fft_eating_fork,self.__fft_non_eating_fork,self.__fft_eating_spoon,self.__fft_non_eating_spoon)
+
+        #self.plot_orientation_fft()
+        #self.plot_acceleration_fft()        
+        #self.plot_gyro_fft()
 
     def plot_rms(self):
-        self.plot_orientation_rms()
-        self.plot_acceleration_rms()        
-        self.plot_gyro_rms()
+        feture='RMS'
+        self.plot_orientation(feture,self.__rms_eating_fork,self.__rms_non_eating_fork,self.__rms_eating_spoon,self.__rms_non_eating_spoon)
+        self.plot_acceleration(feture,self.__rms_eating_fork,self.__rms_non_eating_fork,self.__rms_eating_spoon,self.__rms_non_eating_spoon)        
+        self.plot_gyro(feture,self.__rms_eating_fork,self.__rms_non_eating_fork,self.__rms_eating_spoon,self.__rms_non_eating_spoon)
+
+        #self.plot_orientation_rms()
+        #self.plot_acceleration_rms()        
+        #self.plot_gyro_rms()
 
     def plot_mean(self):
-        self.plot_orientation_mean()
-        self.plot_acceleration_mean()        
-        self.plot_gyro_mean()
+        feture='Mean'
+        self.plot_orientation(feture,self.__mean_eating_fork,self.__mean_non_eating_fork,self.__mean_eating_spoon,self.__mean_non_eating_spoon)
+        self.plot_acceleration(feture,self.__mean_eating_fork,self.__mean_non_eating_fork,self.__mean_eating_spoon,self.__mean_non_eating_spoon)
+        self.plot_gyro(feture,self.__mean_eating_fork,self.__mean_non_eating_fork,self.__mean_eating_spoon,self.__mean_non_eating_spoon)
+
+        #self.plot_orientation_mean()
+        #self.plot_acceleration_mean()        
+        #self.plot_gyro_mean()
 
     def plot_variance(self):
-        self.plot_orientation_variance()
-        self.plot_acceleration_variance()
-        self.plot_gyro_variance()
+
+        feture='Variance'
+        self.plot_orientation(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
+        self.plot_acceleration(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
+        self.plot_gyro(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
+
+        #self.plot_orientation_variance()
+        #self.plot_acceleration_variance()
+        #self.plot_gyro_variance()
+        # 
+        # 
+################# New PLOT Here
+    def plot_orientation(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):    
+        plt.figure(self.get_number())
+        plt.plot(eating_fork[:,0], label='x')
+        plt.plot(eating_fork[:,1], label='y')
+        plt.plot(eating_fork[:,2], label='z')
+        plt.plot(eating_fork[:,3], label='w')
+        plt.title('Orientation ' + feature + '- Eating(fork)')
+        plt.ylabel('Orientation ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation ' + feature + '- Eating(fork)'+".png")
+        plt.close(self.__figure_number)
         
+
+        plt.figure(self.get_number())
+        plt.plot(non_eating_fork[:,0], label='x')
+        plt.plot(non_eating_fork[:,1], label='y')
+        plt.plot(non_eating_fork[:,2], label='z')
+        plt.plot(non_eating_fork[:,3], label='w')
+        plt.title('Orientation ' + feature + '- Non Eating(fork)')
+        plt.ylabel('Orientation ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation ' + feature + '- Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        plt.figure(self.get_number())
+        plt.plot(eating_spoon[:,0], label='x')
+        plt.plot(eating_spoon[:,1], label='y')
+        plt.plot(eating_spoon[:,2], label='z')
+        plt.plot(eating_spoon[:,3], label='w')
+        plt.title('Orientation ' + feature + '- Eating(spoon)')
+        plt.ylabel('Orientation ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation ' + feature + '- Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        plt.figure(self.get_number())
+        plt.plot(non_eating_spoon[:,0], label='x')
+        plt.plot(non_eating_spoon[:,1], label='y')
+        plt.plot(non_eating_spoon[:,2], label='z')
+        plt.plot(non_eating_spoon[:,3], label='w')
+        plt.title('Orientation ' + feature + '- Non Eating(spoon)')
+        plt.ylabel('Orientation ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Orientation ' + feature + '- Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+
+        if self.__show_plot == True:
+            plt.show() 
+
+    def plot_acceleration(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):
+        plt.figure(self.get_number())
+        plt.plot(eating_fork[:,4], label='x')
+        plt.plot(eating_fork[:,5], label='y')
+        plt.plot(eating_fork[:,6], label='z')
+        plt.title('Acceleration ' + feature + '- Eating(fork)')
+        plt.ylabel('Acceleration ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration ' + feature + '- Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(non_eating_fork[:,4], label='x')
+        plt.plot(non_eating_fork[:,5], label='y')
+        plt.plot(non_eating_fork[:,6], label='z')
+        plt.title('Acceleration ' + feature + '- Non Eating(fork)')
+        plt.ylabel('Acceleration ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration ' + feature + '- Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+
+
+        plt.figure(self.get_number())
+        plt.plot(eating_spoon[:,4], label='x')
+        plt.plot(eating_spoon[:,5], label='y')
+        plt.plot(eating_spoon[:,6], label='z')
+        plt.title('Acceleration ' + feature + '- Eating(spoon)')
+        plt.ylabel('Acceleration ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration ' + feature + '- Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(non_eating_spoon[:,4], label='x')
+        plt.plot(non_eating_spoon[:,5], label='y')
+        plt.plot(non_eating_spoon[:,6], label='z')
+        plt.title('Acceleration ' + feature + '- Non Eating(spoon)')
+        plt.ylabel('Acceleration ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Acceleration ' + feature + '- Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        if self.__show_plot == True:
+            plt.show()             
+
+    def plot_gyro(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):
+        
+        plt.figure(self.get_number())
+        plt.plot(eating_fork[:,7], label='x')
+        plt.plot(eating_fork[:,8], label='y')
+        plt.plot(eating_fork[:,9], label='z')
+        plt.title('Gyroscope ' + feature + '- Eating(fork)')
+        plt.ylabel('Gyroscope ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope ' + feature + '- Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(non_eating_fork[:,7], label='x')
+        plt.plot(non_eating_fork[:,8], label='y')
+        plt.plot(non_eating_fork[:,9], label='z')
+        plt.title('Gyroscope ' + feature + '- Non Eating(fork)')
+        plt.ylabel('Gyroscope ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope ' + feature + '- Non Eating(fork)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(eating_spoon[:,7], label='x')
+        plt.plot(eating_spoon[:,8], label='y')
+        plt.plot(eating_spoon[:,9], label='z')
+        plt.title('Gyroscope ' + feature + '- Eating(spoon)')
+        plt.ylabel('Gyroscope ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope ' + feature + '- Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+        
+        plt.figure(self.get_number())
+        plt.plot(non_eating_spoon[:,7], label='x')
+        plt.plot(non_eating_spoon[:,8], label='y')
+        plt.plot(non_eating_spoon[:,9], label='z')
+        plt.title('Gyroscope ' + feature + '- Non Eating(spoon)')
+        plt.ylabel('Gyroscope ' + feature)
+        plt.xlabel('Sample number')
+        plt.legend()
+        plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope ' + feature + '- Non Eating(spoon)'+".png")
+        plt.close(self.__figure_number)
+
+        if self.__show_plot == True:
+            plt.show() 
+
 #################
 
     def plot_orientation_fft(self):    
