@@ -837,6 +837,18 @@ class ActivityRecognition:
 
         #https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
         transformed_data= pca.transform(feature_matrix)
+
+        
+        #target_names = ['eating','non-eating']
+        #plt.figure(self.get_number())
+        #colors = ['navy', 'turquoise', 'darkorange']
+        #lw = 2
+#
+        #for color, i, target_name in zip(colors, [0, 1, 2], target_names):
+        #    plt.scatter(transformed_data[y == i, 0], transformed_data[y == i, 1], color=color, alpha=.8, lw=lw,label=target_name)
+        #plt.legend(loc='best', shadow=False, scatterpoints=1)
+        #plt.title('PCA of IRIS dataset')
+
         plt.figure(self.get_number())
         for ii,jj in zip (transformed_data, feature_matrix):
             plt.scatter (first_pc[0]*ii[0], first_pc[1]*ii[0], color="r")
