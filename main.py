@@ -6,6 +6,7 @@ import math
 from tempfile import TemporaryFile
 import re
 from sklearn.decomposition import PCA
+import pandas as pd
 
 
 class ActivityRecognition:
@@ -793,42 +794,65 @@ class ActivityRecognition:
             self.__min_non_eating_fork, \
             self.__max_non_eating_fork))
 
-        pca = PCA(5)
+        feature_matrix_2 = np.hstack\
+            ((self.__mean_eating_spoon,\
+            self.__variance_eating_spoon, \
+            self.__rms_eating_spoon, \
+            self.__min_eating_spoon, \
+            self.__max_eating_spoon, \
+            self.__mean_non_eating_spoon, \
+            self.__variance_non_eating_spoon, \
+            self.__rms_non_eating_spoon, \
+            self.__min_non_eating_spoon, \
+            self.__max_non_eating_spoon))
+
+        pca = PCA(10)
         pca.fit(feature_matrix)
-        print(pca.components_)
-        print(pca.explained_variance_)
+        
 
-        # # MEAN
-        #self.__mean_eating_fork = []
-        #self.__mean_non_eating_fork = []
-        #self.__mean_eating_spoon= []
-        #self.__maen_non_eating_spoon = []
-#
-        ## VAR
-        #self.__variance_eating_fork = []
-        #self.__variance_non_eating_fork = []
-        #self.__variance_eating_spoon= []
-        #self.__variance_non_eating_spoon = []
-#
-        ## RMS
-        #self.__rms_eating_fork = []
-        #self.__rms_non_eating_fork = []
-        #self.__rms_eating_spoon= []
-        #self.__rms_non_eating_spoon = [] 
-#
-        ## MAX
-        #self.__min_eating_fork = []
-        #self.__min_non_eating_fork = []
-        #self.__min_eating_spoon= []
-        #self.__min_non_eating_spoon = []
-#
-        ## MIN
-        #self.__max_eating_fork = []
-        #self.__max_non_eating_fork = []
-        #self.__max_eating_spoon= []
-        #self.__max_non_eating_spoon = []
+        print("**************************************")
+        print("PCA Components = ", pca.components_)
+        print("**************************************")
 
 
+        first_pc = pca.components_[0]
+        second_pc = pca.components_[1]
+        print("Variance Ratio =  : ", pca.explained_variance_ratio_)
+        print("First PC =  : ", first_pc)
+        print("Second PC =  : ", second_pc)
+
+        ###
+        # Scree Plot 
+        ###
+        per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
+        labels = ['PC' + str(x) for x in range (1,len(per_var)+1)]
+        x = np.arange(1,len(per_var)+1)
+        plt.figure(self.get_number())
+        plt.bar(x,per_var)
+        plt.xticks(x,labels)
+        plt.ylabel('Percentage of Explained Variance')
+        plt.xlabel('principal component')
+        plt.title('Scree plot')
+        plt.show
+
+        #https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
+        transformed_data= pca.transform(feature_matrix)
+        plt.figure(self.get_number())
+        for ii,jj in zip (transformed_data, feature_matrix):
+            plt.scatter (first_pc[0]*ii[0], first_pc[1]*ii[0], color="r")
+            plt.scatter (second_pc[0]*ii[1], second_pc[1]*ii[1], color="c")
+            plt.scatter(jj[0],jj[1],color="b")
+
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.show()
+
+        #https://stackoverflow.com/questions/36566844/pca-projection-and-reconstruction-in-scikit-learn
+        # Projection
+        X_projected = pca.inverse_transform(transformed_data)
+        plt.figure(self.get_number())        
+        plt.scatter(X_projected[:,0], X_projected[:,1], color="y")
+        plt.show()
 
 def main():        
 
