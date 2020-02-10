@@ -10,6 +10,9 @@ import pandas as pd
 import seaborn as sns
 from sklearn.pipeline import make_pipeline
 from sklearn import preprocessing
+import errno
+import os
+import sys
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -22,6 +25,8 @@ class ActivityRecognition:
         self.__ground_truth_file_list = []
         self.__figure_number = 0
         self.__plots_dir = 'plots'
+        self.__raw_plots_dir_path = []
+        self.__pca_plots_dir_path = []
         self.__orientation_axis = {"x" : 0, "y":1, "z" :2, "w" : 3}
         self.__accelerometer_axis = {"x" : 4, "y":5, "z" :6}
         self.__gyro_axis = {"x" : 7, "y":8, "z" :9}
@@ -65,8 +70,6 @@ class ActivityRecognition:
         self.__max_eating_spoon= []
         self.__max_non_eating_spoon = []
 
-
-
         print(os.path.realpath(__file__))
         self.__data_path = os.path.dirname(os.path.realpath(__file__))
         self.__number_of_users = 0
@@ -98,19 +101,22 @@ class ActivityRecognition:
         self.__figure_number = self.__figure_number + 1
         return self.__figure_number
         
-    def preprocessing(self):
-        
-        out_dir = 'out'
-        
+    def preprocessing(self):        
+        out_dir = 'out'        
         fork = 'fork'
         spoon = 'spoon'
         eating = 'eating'
         non_eating = 'non_eating'
-        
-        # output directory for results
-        # should be an option?
-        os.mkdir(out_dir)
-        os.mkdir(self.__plots_dir)
+
+        try:
+            os.mkdir(out_dir)
+            os.mkdir(self.__plots_dir)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST:
+                print("Actitivty Recognition terminated. Can not proceed since " + out_dir + " and " + self.__plots_dir + " directories exists. Please delete them and run again") 
+                sys.exit()
+            else:
+                raise
 
         # @todo - delete out directory if exists
         for i in range (len(self.__myo_data_file_list)):
@@ -150,7 +156,7 @@ class ActivityRecognition:
             plt.ylabel('Orientation')
             plt.xlabel('Sample')
             plt.legend()
-            plt.savefig('' + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
+            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
             
             plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,4], label='x')
@@ -159,7 +165,7 @@ class ActivityRecognition:
             plt.title('Acceleromter VS sample number')
             plt.ylabel('Acceleromter')
             plt.xlabel('Sample number')
-            plt.savefig(str(self.__figure_number) + '_' + 'Acceleromter VS sample number'+".png")
+            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Acceleromter VS sample number'+".png")
             plt.legend()
             
             plt.figure(self.get_number())
@@ -169,10 +175,9 @@ class ActivityRecognition:
             plt.title('Gyroscope VS sample number')
             plt.ylabel('Gyroscope')
             plt.xlabel('Sample number')
-            plt.savefig(str(self.__figure_number) + '_' + 'Gyroscope VS sample number'+".png")
+            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Gyroscope VS sample number'+".png")
             plt.legend()
             
-
         # Fork
         all_ground_truth_fork_data = []
         ground_truth_fork_data_userid = []
@@ -196,21 +201,16 @@ class ActivityRecognition:
             else:
                 print("unknown file.continue")
 
-
-        print("GROUND TRUTH SPOON USERS")
-        print(ground_truth_spoon_data_userid)
-        print("GROUND TRUTH FORK USERS")
-        print(ground_truth_fork_data_userid)
-
         file_prefix = 'eating_imu_data_'
         non_eating_file_prefix = 'noneating_imu_data_'
         userid = []
-        ###########################################################################
-        # Fork IMU data
-        ###########################################################################
+
+        print("\n")
         print("###########################################################################")
         print("Extracting eating with fork IMU data...")
         print("###########################################################################")
+        print("\n")
+
         for i in range (len(all_ground_truth_fork_data)):
             fork_data = all_ground_truth_fork_data[i]
             userid = ground_truth_fork_data_userid[i]
@@ -231,9 +231,7 @@ class ActivityRecognition:
             myo_fork_data = self.__all_imu_myo_fork_data[k]
 
             # create a temp numpy array of zeros
-            eating_action_range = np.zeros([len(fork_data),2], dtype=int)
-
-            
+            eating_action_range = np.zeros([len(fork_data),2], dtype=int)            
 
             # should get the size according to the shape
             temp_fork_eating = np.ones((1,10),dtype=float)
@@ -281,16 +279,11 @@ class ActivityRecognition:
             self.__imu_fork_eating.append(temp_fork_eating)
             temp_fork_eating = []
 
-        # @todo: merge to one function
-        ###########################################################################
-        # Spoon IMU data
-        ###########################################################################
+
         
         print("###########################################################################")
         print("Extracting eating with spoon IMU data...")
         print("###########################################################################")
-        #file_prefix = 'eating_with_spoon_imu_data_'
-        #non_eating_file_prefix = 'noneating_with_spoon_imu_data_'
 
         for i in range (len(all_ground_truth_spoon_data)):
             spoon_data = all_ground_truth_spoon_data[i]
@@ -356,23 +349,9 @@ class ActivityRecognition:
             self.__imu_spoon_eating.append(temp_spoon_eating)
             temp_spoon_eating = []
         
-        
-        print("###########################################################################")
-        print("Extracting eating actions IMU data completed")
-        print("###########################################################################")
 
 
-    def feature_extraction(self):
-        """
-        Feature extraction step
-        Parameters
-        ----------
-        None
-
-        Return
-        ------
-        None
-        """        
+    def feature_extraction(self):   
         self.rms()
         self.mean()
         self.variance()
@@ -380,13 +359,13 @@ class ActivityRecognition:
         self.max()
         
         
-
     def rms(self):
-
-        print("\n###########################################################################")
-        print("Calculate RMS of eating and non eating")
+        print("\n")
+        print("###########################################################################")
+        print("Feature extraction: Calculate RMS of eating and non eating")
         print("###########################################################################")
         
+
         eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
         non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
         eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
@@ -419,10 +398,11 @@ class ActivityRecognition:
             self.plot_rms()
 
     def mean(self):
-
-        print("\n###########################################################################")
-        print("Calculate Mean of eating and non eating")
+        print("\n")            
         print("###########################################################################")
+        print("Feature extraction: Calculate Mean of eating and non eating...")
+        print("###########################################################################")
+        
         
         eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
         non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
@@ -457,11 +437,12 @@ class ActivityRecognition:
                  
 
     def variance(self):
-
-        print("\n###########################################################################")
-        print("Calculate Variance of eating and non eating")
+        print("\n")
+        print("###########################################################################")
+        print("Feature extraction: Calculate Variance of eating and non eating")
         print("###########################################################################")
         
+
         eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
         non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
         eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
@@ -493,12 +474,13 @@ class ActivityRecognition:
         if self.__plot == True:
             self.plot_variance()
 
-    def min(self):
-    
-        print("\n###########################################################################")
-        print("Calculate MIN of eating and non eating")
+    def min(self):    
+        print("\n")
+        print("###########################################################################")
+        print("Feature extraction: Calculate MIN of eating and non eating...")
         print("###########################################################################")
         
+
         eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
         non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
         eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
@@ -530,12 +512,12 @@ class ActivityRecognition:
         if self.__plot == True:
             self.plot_min()
 
-    def max(self):
-    
-        print("\n###########################################################################")
-        print("Calculate MAX of eating and non eating")
+    def max(self):    
+        print("\n")
         print("###########################################################################")
-        
+        print("Feature extraction: Calculate MAX of eating and non eating...")
+        print("###########################################################################")        
+
         eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
         non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
         eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
@@ -580,11 +562,15 @@ class ActivityRecognition:
         os.makedirs(plots_dir_path)
         plots_dir_path = self.__plots_dir + '/' + 'MAX' + '/'
         os.makedirs(plots_dir_path)
-        plots_dir_path = self.__plots_dir + '/' + 'user_raw_imu_data' + '/'
-        os.makedirs(plots_dir_path)
-
-    def plot_rms(self):
         
+        self.__raw_plots_dir_path = self.__plots_dir + '/' + 'user_raw_imu_data' + '/'
+        os.makedirs(self.__raw_plots_dir_path)
+
+        self.__pca_plots_dir_path = self.__plots_dir + '/' + 'PCA' + '/'
+        os.makedirs(self.__pca_plots_dir_path)
+
+
+    def plot_rms(self):        
         feture='RMS'
         self.plot_orientation(feture,self.__rms_eating_fork,self.__rms_non_eating_fork,self.__rms_eating_spoon,self.__rms_non_eating_spoon)
         self.plot_acceleration(feture,self.__rms_eating_fork,self.__rms_non_eating_fork,self.__rms_eating_spoon,self.__rms_non_eating_spoon)        
@@ -599,28 +585,24 @@ class ActivityRecognition:
 
 
     def plot_variance(self):
-
         feture='Variance'
         self.plot_orientation(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
         self.plot_acceleration(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
         self.plot_gyro(feture,self.__variance_eating_fork,self.__variance_non_eating_fork,self.__variance_eating_spoon,self.__variance_non_eating_spoon)
 
-    def plot_min(self):
-    
+    def plot_min(self):    
         feture='MIN'
         self.plot_orientation(feture,self.__min_eating_fork,self.__min_non_eating_fork,self.__min_eating_spoon,self.__min_non_eating_spoon)
         self.plot_acceleration(feture,self.__min_eating_fork,self.__min_non_eating_fork,self.__min_eating_spoon,self.__min_non_eating_spoon)
         self.plot_gyro(feture,self.__min_eating_fork,self.__min_non_eating_fork,self.__min_eating_spoon,self.__min_non_eating_spoon)
 
-    def plot_max(self):
-    
+    def plot_max(self):    
         feture='MAX'
         self.plot_orientation(feture,self.__max_eating_fork,self.__max_non_eating_fork,self.__max_eating_spoon,self.__max_non_eating_spoon)
         self.plot_acceleration(feture,self.__max_eating_fork,self.__max_non_eating_fork,self.__max_eating_spoon,self.__max_non_eating_spoon)
         self.plot_gyro(feture,self.__max_eating_fork,self.__max_non_eating_fork,self.__max_eating_spoon,self.__max_non_eating_spoon)
 
     def plot_orientation(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):    
-
         plots_dir_path = self.__plots_dir + '/' + feature + '/' 
         plt.figure(self.get_number())
         plt.plot(eating_fork[:,0], label='x')
@@ -677,8 +659,7 @@ class ActivityRecognition:
         if self.__show_plot == True:
             plt.show() 
 
-    def plot_acceleration(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):
-        
+    def plot_acceleration(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):        
         plots_dir_path = self.__plots_dir + '/' + feature + '/' 
         plt.figure(self.get_number())
         plt.plot(eating_fork[:,4], label='x')
@@ -729,9 +710,7 @@ class ActivityRecognition:
             plt.show()             
 
     def plot_gyro(self,feature,eating_fork,non_eating_fork,eating_spoon, non_eating_spoon):
-
-        plots_dir_path = self.__plots_dir + '/' + feature + '/' 
-        
+        plots_dir_path = self.__plots_dir + '/' + feature + '/'         
         plt.figure(self.get_number())
         plt.plot(eating_fork[:,7], label='x')
         plt.plot(eating_fork[:,8], label='y')
@@ -779,10 +758,18 @@ class ActivityRecognition:
         if self.__show_plot == True:
             plt.show() 
 
-    def pca(self):
-        print("PCA")
+
+    def pca(self):        
+        print("\n")
+        print("###########################################################################")
+        print("Feature Selection: PCA")
+        print("###########################################################################")
         
-        feature_matrix = np.hstack\
+        ## https://sebastianraschka.com/Articles/2014_pca_step_by_step.html
+        ## https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
+
+        # fork eating and non eating
+        X_fork = np.hstack\
             ((self.__mean_eating_fork,\
             self.__variance_eating_fork, \
             self.__rms_eating_fork, \
@@ -794,7 +781,8 @@ class ActivityRecognition:
             self.__min_non_eating_fork, \
             self.__max_non_eating_fork))
 
-        feature_matrix_2 = np.hstack\
+        # spoon eating and non eating
+        X_spoon = np.hstack\
             ((self.__mean_eating_spoon,\
             self.__variance_eating_spoon, \
             self.__rms_eating_spoon, \
@@ -806,91 +794,41 @@ class ActivityRecognition:
             self.__min_non_eating_spoon, \
             self.__max_non_eating_spoon))
 
-
-        # why scaling
+        # Let's scale the feature set before doing pca
+        # here is an example what would happened without scaling
         #https://scikit-learn.org/stable/modules/preprocessing.html
-        X_scaled = preprocessing.scale(feature_matrix_2)
+        X_fork_scaled = preprocessing.scale(X_fork)
+        X_spoon_scaled = preprocessing.scale(X_spoon)
 
-        pca = PCA(10)
-        pca_trans = pca.fit_transform(X_scaled.T)
+        number_of_components = 10
+        pca_X_fork = PCA(number_of_components)
+
+        pca_trans = pca_X_fork.fit_transform(X_fork)
+
+        # Scree Plot
+        per_var = np.round(pca_X_fork.explained_variance_ratio_ * 100, decimals=1)
+        labels = ['PC' + str(x) for x in range (1,len(per_var)+1)]
+        x = np.arange(1,len(per_var)+1)
+        plt.figure(self.get_number())
+        plt.bar(x,per_var)
+        plt.xticks(x,labels)
+        plt.ylabel('Percentage of Explained Variance of X fork')
+        plt.xlabel('principal component')
+        plt.title('Scree plot')
+        plt.show()
+        plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Scree Plot'+".png")
+        
         plt.figure(self.get_number())
         plt.plot(pca_trans[0:50,0],pca_trans[0:50,1], 'o', markersize=7, color='blue', alpha=0.5, label='eating')
         plt.plot(pca_trans[50:100,0], pca_trans[50:100,1], '^', markersize=7, color='red', alpha=0.5, label='non_eating')
         plt.xlabel('x_values')
         plt.ylabel('y_values')
         plt.legend()
-        plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+        plt.title('Transformed samples with class labels')
         plt.show()
+        plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label'+".png")
 
-#
-        #nof_components=2
-        #labels = ['eating','non_eating']
-#
-        #pca = PCA(nof_components)
-        #pca.fit(feature_matrix)
-        #
-#
-        #print("**************************************")
-        #print("PCA Components = ", pca.components_)
-        #print("**************************************")
-#
-#
-        #first_pc = pca.components_[0]
-        #second_pc = pca.components_[1]
-        #print("Variance Ratio =  : ", pca.explained_variance_ratio_)
-        #print("First PC =  : ", first_pc)
-        #print("Second PC =  : ", second_pc)
-#
-        ####
-        ## Scree Plot 
-        ####
-        #per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
-        #labels = ['PC' + str(x) for x in range (1,len(per_var)+1)]
-        #x = np.arange(1,len(per_var)+1)
-        #plt.figure(self.get_number())
-        #plt.bar(x,per_var)
-        #plt.xticks(x,labels)
-        #plt.ylabel('Percentage of Explained Variance')
-        #plt.xlabel('principal component')
-        #plt.title('Scree plot')
-        #plt.show
-#
-        ## use this as a reference
-        ## https://sebastianraschka.com/Articles/2014_pca_step_by_step.html
-        ##https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
-        #transformed_data= pca.transform(feature_matrix)
-#
-        #
-        ##target_names = ['eating','non-eating']
-        ##plt.figure(self.get_number())
-        ##colors = ['navy', 'turquoise', 'darkorange']
-        ##lw = 2
-##
-        ##for color, i, target_name in zip(colors, [0, 1, 2], target_names):
-        ##    plt.scatter(transformed_data[y == i, 0], transformed_data[y == i, 1], color=color, alpha=.8, lw=lw,label=target_name)
-        ##plt.legend(loc='best', shadow=False, scatterpoints=1)
-        ##plt.title('PCA of IRIS dataset')
-        ##y = ['dd','bb']
-        ##sns.scatterplot(x='x', y='y',data=transformed_data)
-#
-        #plt.figure(self.get_number())
-        #for ii,jj in zip (transformed_data, feature_matrix):
-        #    plt.scatter (first_pc[0]*ii[0], first_pc[1]*ii[0], color="r")
-        #    plt.scatter (second_pc[0]*ii[1], second_pc[1]*ii[1], color="c")
-        #    plt.scatter(jj[0],jj[1],color="b")
-#
-        #plt.xlabel("X")
-        #plt.ylabel("Y")
-        #plt.show()
-#
-        #        
-        #
-        #plt.figure(self.get_number())        
-        #plt.scatter(transformed_data[:,0], transformed_data[:,1], color="y")
-        #plt.show()
-#
 def main():        
-
     activityRecognition = ActivityRecognition()
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
