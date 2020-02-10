@@ -765,9 +765,13 @@ class ActivityRecognition:
         print("Feature Selection: PCA")
         print("###########################################################################")
         
+        # Try this tommorow
+        # https://stackabuse.com/dimensionality-reduction-in-python-with-scikit-learn/
+        
+
         ## https://sebastianraschka.com/Articles/2014_pca_step_by_step.html
         ## https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
-
+        ##https://blog.paperspace.com/dimension-reduction-with-principal-component-analysis/
         # fork eating and non eating
         X_fork = np.hstack\
             ((self.__mean_eating_fork,\
