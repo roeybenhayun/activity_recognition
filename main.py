@@ -7,7 +7,7 @@ from tempfile import TemporaryFile
 import re
 from sklearn.decomposition import PCA
 import pandas as pd
-
+import seaborn as sns
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -246,10 +246,10 @@ class ActivityRecognition:
             for j in range(len(fork_data)):
                 start_frame = fork_data[j][0]
                 end_frame = fork_data[j][1]
-                #print ("Start = ", start_frame)
-                #print ("End = ", end_frame)
-                start_row = (start_frame * 50)/30
-                end_row = (end_frame * 50)/30
+                
+                # the // to competible with python 3
+                start_row = (start_frame * 50)//30
+                end_row = (end_frame * 50)//30
                 eating_action_range[j][0] = start_row
                 eating_action_range[j][1] = end_row
                 extracted_imu_data = myo_fork_data[start_row:end_row]
@@ -321,8 +321,9 @@ class ActivityRecognition:
             for j in range(len(spoon_data)):
                 start_frame = spoon_data[j][0]
                 end_frame = spoon_data[j][1]
-                start_row = (start_frame * 50)/30
-                end_row = (end_frame * 50)/30
+                # the // to competible with python 3
+                start_row = (start_frame * 50)//30
+                end_row = (end_frame * 50)//30
                 eating_action_range[j][0] = start_row
                 eating_action_range[j][1] = end_row
                 extracted_imu_data = myo_spoon_data[start_row:end_row]
@@ -806,7 +807,8 @@ class ActivityRecognition:
             self.__min_non_eating_spoon, \
             self.__max_non_eating_spoon))
 
-        pca = PCA(10)
+        nof_components=2
+        pca = PCA(nof_components)
         pca.fit(feature_matrix)
         
 
@@ -848,6 +850,8 @@ class ActivityRecognition:
         #    plt.scatter(transformed_data[y == i, 0], transformed_data[y == i, 1], color=color, alpha=.8, lw=lw,label=target_name)
         #plt.legend(loc='best', shadow=False, scatterpoints=1)
         #plt.title('PCA of IRIS dataset')
+        #y = ['dd','bb']
+        #sns.scatterplot(x='x', y='y',data=transformed_data)
 
         plt.figure(self.get_number())
         for ii,jj in zip (transformed_data, feature_matrix):
