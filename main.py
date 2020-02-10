@@ -135,15 +135,10 @@ class ActivityRecognition:
                 else:
                     print("unknown file.continue")
 
-        # @todo add print flag here
-        # by default this flag should be disabled
-        # only print relevant data
-        print("IMU MYO SPOON DATA USERS")
-        print(self.__imu_myo_spoon_data_userid)
-        print("IMU MYO FORK DATA USERS")
-        print(self.__imu_myo_spoon_data_userid)
 
-        
+        self.create_plot_dir()
+
+        # plot user17 raw data for illustration purposes
         if self.__plot == True:
             user_all_imu_data = self.__all_imu_myo_spoon_data[17]  
             plt.figure(self.get_number())
@@ -155,7 +150,7 @@ class ActivityRecognition:
             plt.ylabel('Orientation')
             plt.xlabel('Sample')
             plt.legend()
-            plt.savefig(str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
+            plt.savefig('' + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
             
             plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,4], label='x')
@@ -361,7 +356,7 @@ class ActivityRecognition:
             self.__imu_spoon_eating.append(temp_spoon_eating)
             temp_spoon_eating = []
         
-        self.create_plot_dir()
+        
         print("###########################################################################")
         print("Extracting eating actions IMU data completed")
         print("###########################################################################")
@@ -584,6 +579,8 @@ class ActivityRecognition:
         plots_dir_path = self.__plots_dir + '/' + 'MIN' + '/'
         os.makedirs(plots_dir_path)
         plots_dir_path = self.__plots_dir + '/' + 'MAX' + '/'
+        os.makedirs(plots_dir_path)
+        plots_dir_path = self.__plots_dir + '/' + 'user_raw_imu_data' + '/'
         os.makedirs(plots_dir_path)
 
     def plot_rms(self):
