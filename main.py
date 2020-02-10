@@ -8,6 +8,8 @@ import re
 from sklearn.decomposition import PCA
 import pandas as pd
 import seaborn as sns
+from sklearn.pipeline import make_pipeline
+from sklearn import preprocessing
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -807,69 +809,89 @@ class ActivityRecognition:
             self.__min_non_eating_spoon, \
             self.__max_non_eating_spoon))
 
-        nof_components=2
-        pca = PCA(nof_components)
-        pca.fit(feature_matrix)
-        
 
-        print("**************************************")
-        print("PCA Components = ", pca.components_)
-        print("**************************************")
+        # why scaling
+        #https://scikit-learn.org/stable/modules/preprocessing.html
+        X_scaled = preprocessing.scale(feature_matrix_2)
 
-
-        first_pc = pca.components_[0]
-        second_pc = pca.components_[1]
-        print("Variance Ratio =  : ", pca.explained_variance_ratio_)
-        print("First PC =  : ", first_pc)
-        print("Second PC =  : ", second_pc)
-
-        ###
-        # Scree Plot 
-        ###
-        per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
-        labels = ['PC' + str(x) for x in range (1,len(per_var)+1)]
-        x = np.arange(1,len(per_var)+1)
+        pca = PCA(10)
+        pca_trans = pca.fit_transform(X_scaled.T)
         plt.figure(self.get_number())
-        plt.bar(x,per_var)
-        plt.xticks(x,labels)
-        plt.ylabel('Percentage of Explained Variance')
-        plt.xlabel('principal component')
-        plt.title('Scree plot')
-        plt.show
+        plt.plot(pca_trans[0:50,0],pca_trans[0:50,1], 'o', markersize=7, color='blue', alpha=0.5, label='eating')
+        plt.plot(pca_trans[50:100,0], pca_trans[50:100,1], '^', markersize=7, color='red', alpha=0.5, label='non_eating')
+        plt.xlabel('x_values')
+        plt.ylabel('y_values')
+        plt.legend()
+        plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+        plt.show()
 
-        #https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
-        transformed_data= pca.transform(feature_matrix)
-
-        
-        #target_names = ['eating','non-eating']
-        #plt.figure(self.get_number())
-        #colors = ['navy', 'turquoise', 'darkorange']
-        #lw = 2
 #
-        #for color, i, target_name in zip(colors, [0, 1, 2], target_names):
-        #    plt.scatter(transformed_data[y == i, 0], transformed_data[y == i, 1], color=color, alpha=.8, lw=lw,label=target_name)
-        #plt.legend(loc='best', shadow=False, scatterpoints=1)
-        #plt.title('PCA of IRIS dataset')
-        #y = ['dd','bb']
-        #sns.scatterplot(x='x', y='y',data=transformed_data)
-
-        plt.figure(self.get_number())
-        for ii,jj in zip (transformed_data, feature_matrix):
-            plt.scatter (first_pc[0]*ii[0], first_pc[1]*ii[0], color="r")
-            plt.scatter (second_pc[0]*ii[1], second_pc[1]*ii[1], color="c")
-            plt.scatter(jj[0],jj[1],color="b")
-
-        plt.xlabel("X")
-        plt.ylabel("Y")
-        plt.show()
-
-        #https://stackoverflow.com/questions/36566844/pca-projection-and-reconstruction-in-scikit-learn
-        # Projection
-        X_projected = pca.inverse_transform(transformed_data)
-        plt.figure(self.get_number())        
-        plt.scatter(X_projected[:,0], X_projected[:,1], color="y")
-        plt.show()
-
+        #nof_components=2
+        #labels = ['eating','non_eating']
+#
+        #pca = PCA(nof_components)
+        #pca.fit(feature_matrix)
+        #
+#
+        #print("**************************************")
+        #print("PCA Components = ", pca.components_)
+        #print("**************************************")
+#
+#
+        #first_pc = pca.components_[0]
+        #second_pc = pca.components_[1]
+        #print("Variance Ratio =  : ", pca.explained_variance_ratio_)
+        #print("First PC =  : ", first_pc)
+        #print("Second PC =  : ", second_pc)
+#
+        ####
+        ## Scree Plot 
+        ####
+        #per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
+        #labels = ['PC' + str(x) for x in range (1,len(per_var)+1)]
+        #x = np.arange(1,len(per_var)+1)
+        #plt.figure(self.get_number())
+        #plt.bar(x,per_var)
+        #plt.xticks(x,labels)
+        #plt.ylabel('Percentage of Explained Variance')
+        #plt.xlabel('principal component')
+        #plt.title('Scree plot')
+        #plt.show
+#
+        ## use this as a reference
+        ## https://sebastianraschka.com/Articles/2014_pca_step_by_step.html
+        ##https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
+        #transformed_data= pca.transform(feature_matrix)
+#
+        #
+        ##target_names = ['eating','non-eating']
+        ##plt.figure(self.get_number())
+        ##colors = ['navy', 'turquoise', 'darkorange']
+        ##lw = 2
+##
+        ##for color, i, target_name in zip(colors, [0, 1, 2], target_names):
+        ##    plt.scatter(transformed_data[y == i, 0], transformed_data[y == i, 1], color=color, alpha=.8, lw=lw,label=target_name)
+        ##plt.legend(loc='best', shadow=False, scatterpoints=1)
+        ##plt.title('PCA of IRIS dataset')
+        ##y = ['dd','bb']
+        ##sns.scatterplot(x='x', y='y',data=transformed_data)
+#
+        #plt.figure(self.get_number())
+        #for ii,jj in zip (transformed_data, feature_matrix):
+        #    plt.scatter (first_pc[0]*ii[0], first_pc[1]*ii[0], color="r")
+        #    plt.scatter (second_pc[0]*ii[1], second_pc[1]*ii[1], color="c")
+        #    plt.scatter(jj[0],jj[1],color="b")
+#
+        #plt.xlabel("X")
+        #plt.ylabel("Y")
+        #plt.show()
+#
+        #        
+        #
+        #plt.figure(self.get_number())        
+        #plt.scatter(transformed_data[:,0], transformed_data[:,1], color="y")
+        #plt.show()
+#
 def main():        
 
     activityRecognition = ActivityRecognition()
