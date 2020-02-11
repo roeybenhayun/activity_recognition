@@ -10,9 +10,11 @@ import pandas as pd
 import seaborn as sns
 from sklearn.pipeline import make_pipeline
 from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
 import errno
 import os
 import sys
+import plotly.plotly as py
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -773,17 +775,25 @@ class ActivityRecognition:
         ## https://plot.ly/python/v3/ipython-notebooks/principal-component-analysis/
         ##https://blog.paperspace.com/dimension-reduction-with-principal-component-analysis/
         # fork eating and non eating
-        X_fork = np.hstack\
+
+        #30x50
+        X_1 = np.hstack\
             ((self.__mean_eating_fork,\
             self.__variance_eating_fork, \
             self.__rms_eating_fork, \
             self.__min_eating_fork, \
-            self.__max_eating_fork, \
-            self.__mean_non_eating_fork, \
+            self.__max_eating_fork  ))
+        #30x50
+        X_2 = np.hstack\
+            ((self.__mean_non_eating_fork, \
             self.__variance_non_eating_fork, \
             self.__rms_non_eating_fork, \
             self.__min_non_eating_fork, \
             self.__max_non_eating_fork))
+
+        #60x50
+        X_fork = np.vstack((X_1, X_2))
+
 
         # spoon eating and non eating
         X_spoon = np.hstack\
@@ -801,8 +811,8 @@ class ActivityRecognition:
         # Let's scale the feature set before doing pca
         # here is an example what would happened without scaling
         #https://scikit-learn.org/stable/modules/preprocessing.html
-        X_fork_scaled = preprocessing.scale(X_fork)
-        X_spoon_scaled = preprocessing.scale(X_spoon)
+        X_fork_scaled = StandardScaler().fit_transform(X_fork)
+        X_spoon_scaled = StandardScaler().fit_transform(X_spoon)
 
         number_of_components = 10
         pca_X_fork = PCA(number_of_components)
@@ -822,15 +832,44 @@ class ActivityRecognition:
         plt.show()
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Scree Plot'+".png")
         
-        plt.figure(self.get_number())
-        plt.plot(pca_trans[0:50,0],pca_trans[0:50,1], 'o', markersize=7, color='blue', alpha=0.5, label='eating')
-        plt.plot(pca_trans[50:100,0], pca_trans[50:100,1], '^', markersize=7, color='red', alpha=0.5, label='non_eating')
-        plt.xlabel('x_values')
-        plt.ylabel('y_values')
-        plt.legend()
-        plt.title('Transformed samples with class labels')
-        plt.show()
-        plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label'+".png")
+        colors = {'eating': '#0D76BF', 'non-eating': '#00cc96'}
+
+        y = np.zeros([60,1])
+        data = []
+
+        for name, col in zip(('eating', 'non-eating'), colors.values()):
+
+            trace = dict(
+                type='scatter',
+                x=pca_trans[y==name,0],
+                y=pca_trans[y==name,1],
+                mode='markers',
+                name=name,
+                marker=dict(
+                    color=col,
+                    size=12,
+                    line=dict(
+                        color='rgba(217, 217, 217, 0.14)',
+                        width=0.5),
+                    opacity=0.8)
+            )
+            data.append(trace)
+
+        layout = dict(
+                xaxis=dict(title='PC1', showline=False),
+                yaxis=dict(title='PC2', showline=False)
+        )
+        fig = dict(data=data, layout=layout)
+        py.iplot(fig, filename='pca-scikitlearn')
+                #plt.figure(self.get_number())
+        #plt.plot(pca_trans[0:50,0],pca_trans[0:50,1], 'o', markersize=7, color='blue', alpha=0.5, label='eating')
+        #plt.plot(pca_trans[50:100,0], pca_trans[50:100,1], '^', markersize=7, color='red', alpha=0.5, label='non_eating')
+        #plt.xlabel('x_values')
+        #plt.ylabel('y_values')
+        #plt.legend()
+        #plt.title('Transformed samples with class labels')
+        #plt.show()
+        #plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label'+".png")
 
 def main():        
     activityRecognition = ActivityRecognition()
