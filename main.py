@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 import errno
 import os
 import sys
-
+from sklearn.model_selection import train_test_split
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -41,6 +41,8 @@ class ActivityRecognition:
         self.__imu_fork_non_eating = []
         self.__imu_spoon_eating = []
         self.__imu_spoon_non_eating = []
+
+        self.__X = []
 
         # MEAN
         self.__mean_eating_fork = []
@@ -885,7 +887,31 @@ class ActivityRecognition:
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label(spoon)'+".png")
 
 
+        # stack the spoon eating and non eating activity into one matrix
+        # 120 x 10
+        # where
+        # 120 are the number of users a
+        # 10 is the number of features
+        self.__X = np.vstack((X_1, X_3, X_2, X_4))
+        
 
+
+    def svm(self):
+        print("\n")
+        print("###########################################################################")
+        print("Feature Selection: SVM")
+        print("###########################################################################")
+        # https://www.kaggle.com/moghazy/cracking-the-iris-dataset-eda-pca-and-svm
+
+        X_reduced = PCA(n_components=5).fit_transform(self.__X)
+
+        #X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.4, random_state=42)
+
+        print("train test spllit")
+        print(np.shape(X_train))
+        print(np.shape(X_test))
+        print(np.shape(y_train))
+        print(np.shape(y_test))
 
 
 
@@ -894,6 +920,7 @@ def main():
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
     activityRecognition.pca()
+    activityRecognition.svm()
 
 if __name__ == "__main__":
     main()
