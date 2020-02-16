@@ -161,7 +161,8 @@ class ActivityRecognition:
             plt.xlabel('Sample')
             plt.legend()
             plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
-            
+            plt.close(self.__figure_number)
+
             plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,4], label='x')
             plt.plot(user_all_imu_data[:,5], label='y')
@@ -171,6 +172,7 @@ class ActivityRecognition:
             plt.xlabel('Sample number')
             plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Acceleromter VS sample number'+".png")
             plt.legend()
+            plt.close(self.__figure_number)
             
             plt.figure(self.get_number())
             plt.plot(user_all_imu_data[:,7], label='x')
@@ -181,6 +183,7 @@ class ActivityRecognition:
             plt.xlabel('Sample number')
             plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Gyroscope VS sample number'+".png")
             plt.legend()
+            plt.close(self.__figure_number)
             
         # Fork
         all_ground_truth_fork_data = []
@@ -818,7 +821,7 @@ class ActivityRecognition:
         plt.xlabel('principal component')
         plt.title('Scree plot')
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Scree Plot'+".png")
-        
+        plt.close(self.__figure_number)
 
         #print("SHAPE")
         #print(np.shape(pca_trans))
@@ -831,7 +834,7 @@ class ActivityRecognition:
         plt.legend()
         plt.title('Transformed samples with class labels')
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label'+".png")
-
+        plt.close(self.__figure_number)
 
          #30x50
         X_3 = np.hstack\
@@ -872,7 +875,7 @@ class ActivityRecognition:
         plt.xlabel('principal component')
         plt.title('Scree plot (spoon)')
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Scree Plot(spoon)'+".png")
-        
+        plt.close(self.__figure_number)
 
         #print("SHAPE")
         #print(np.shape(pca_trans_spoon))
@@ -885,7 +888,7 @@ class ActivityRecognition:
         plt.legend()
         plt.title('Transformed samples with class labels (spoon)')
         plt.savefig(self.__pca_plots_dir_path + str(self.__figure_number) + '_' + 'PCA Transformed with class label(spoon)'+".png")
-
+        plt.close(self.__figure_number)
 
         # stack the spoon eating and non eating activity into one matrix
         # 120 x 10
@@ -903,10 +906,15 @@ class ActivityRecognition:
         print("###########################################################################")
         # https://www.kaggle.com/moghazy/cracking-the-iris-dataset-eda-pca-and-svm
 
+        y = range(120)
+        #y[0:60]='y'
+        #y[60:119] ='n'
         X_reduced = PCA(n_components=5).fit_transform(self.__X)
 
-        #X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.4, random_state=42)
 
+        X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.4, random_state=42)
+
+        print(np.shape(X_reduced))
         print("train test spllit")
         print(np.shape(X_train))
         print(np.shape(X_test))
