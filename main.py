@@ -14,7 +14,12 @@ from sklearn.preprocessing import StandardScaler
 import errno
 import os
 import sys
+# imports for Project2
 from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
+from sklearn.metrics import classification_report
+from sklearn import tree
+from sklearn.neural_network import MLPClassifier
 
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
@@ -859,7 +864,7 @@ class ActivityRecognition:
         #https://scikit-learn.org/stable/modules/preprocessing.html
         #X_spoon_scaled = StandardScaler().fit_transform(X_spoon)
 
-        number_of_components = 10
+        number_of_components = 5
         pca_X_spoon = PCA(number_of_components)
 
         pca_trans_spoon = pca_X_spoon.fit_transform(X_spoon)
@@ -899,36 +904,92 @@ class ActivityRecognition:
         
 
 
-    def svm(self):
+    # In this method I have combined all activities for all users in one feature matrix
+    # PCA was calculated on this matrix.
+    # This function return the reduced feature matrix (after PCA)
+    # This is an addition to the class that submitted in project1
+    def pca_all(self):
+         X_reduced = PCA(n_components=5).fit_transform(self.__X)
+         return X_reduced
+
+
+class UserDependentAnalysis:
+    def __init__(self,feature_vector=None):
+        print("User Dependent Analysis constructor")
+        self.__X_reduced = feature_vector
+
+
+    def split_dataset(self):
         print("\n")
         print("###########################################################################")
-        print("Feature Selection: SVM")
+        print("Data set split")
         print("###########################################################################")
         # https://www.kaggle.com/moghazy/cracking-the-iris-dataset-eda-pca-and-svm
 
-        y = range(120)
         #y[0:60]='y'
         #y[60:119] ='n'
-        X_reduced = PCA(n_components=5).fit_transform(self.__X)
+        Y = []
+        for i in range(60):
+            Y.append("eating")
+        for i in range(60,120):
+            Y.append("non_eating")
 
+        # Split the data in 60% training/validation and 40% test set. random_state was set to a constant value
+        # in order to get conssistent results when we re run the code
+        X_train, X_test, Y_train, Y_test = train_test_split(self.__X_reduced , Y, test_size=0.4, random_state=42)
 
-        X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.4, random_state=42)
-
-        print(np.shape(X_reduced))
+        print(np.shape(self.__X_reduced ))
         print("train test spllit")
-        print(np.shape(X_train))
-        print(np.shape(X_test))
-        print(np.shape(y_train))
-        print(np.shape(y_test))
+        print("X_train shape: " ,np.shape(X_train))
+        print("X_test shape : " ,np.shape(X_test))
+        print("Y_train shape : " ,np.shape(Y_train))
+        print("Y_test shape : " ,np.shape(Y_test))
+
+        return X_train,X_test,Y_train,Y_test
+    
+    def classify(self,classifier,X_train, X_test, Y_train, Y_test):
+        if (classifier == 'svm'):
+            print("SVM Classifier")
+            clf = LinearSVC(penalty='l2', loss='squared_hinge',
+                    dual=True, tol=0.0001, C=100, multi_class='ovr',
+                    fit_intercept=True, intercept_scaling=1, class_weight=None,verbose=0
+                    , random_state=0, max_iter=1000)
+        elif (classifier == 'decision_tree'):
+            print("Decision Tree Classifier")
+            clf = tree.DecisionTreeClassifier()
+        elif (classifier == 'neural_nets'):
+            print("Neural Nets Classifier")
+            clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(5, 2), random_state=1)
+
+        else:
+            print("Unsupported classifier")
+
+        clf.fit(X_train,Y_train)
+        predicted = clf.predict(X_test)
+        expected = Y_test
+
+        print( '\nClassification report\n')
+        print(classification_report(expected, predicted))
 
 
 
-def main():        
+def main():
+    # Project 1
     activityRecognition = ActivityRecognition()
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
     activityRecognition.pca()
-    activityRecognition.svm()
+
+    # Project 2    
+    reduced_feature_matrix = activityRecognition.pca_all()
+
+    userDependentAnalysis = UserDependentAnalysis(reduced_feature_matrix)
+
+    X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset()
+
+    userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
+    userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
+    userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
 
 if __name__ == "__main__":
     main()
