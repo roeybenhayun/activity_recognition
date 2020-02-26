@@ -24,7 +24,7 @@ from sklearn.neural_network import MLPClassifier
 class ActivityRecognition:
     def __init__(self, ground_truth_dir_path=None, myo_data_dir_path=None):
         self.__data_dir_path = ground_truth_dir_path
-        self.__plot = True
+        self.__plot = False
         self.__save = False
         self.__show_plot = False
         self.__log_enabled = False
@@ -42,42 +42,40 @@ class ActivityRecognition:
         self.__imu_myo_fork_data_userid = []
         self.__all_imu_myo_spoon_data = []
         self.__imu_myo_spoon_data_userid = []
+        
         self.__imu_fork_eating = []
         self.__imu_fork_non_eating = []
         self.__imu_spoon_eating = []
         self.__imu_spoon_non_eating = []
 
+        self.__imu_eating = []
+        self.__imu_non_eating = []
+
         self.__X = []
 
+        #self.__number_of_rows_per_user = []
         # MEAN
-        self.__mean_eating_fork = []
-        self.__mean_non_eating_fork = []
-        self.__mean_eating_spoon= []
-        self.__maen_non_eating_spoon = []
-
+        self.__mean_eating = []
+        self.__mean_non_eating = []
+        
         # VAR
-        self.__variance_eating_fork = []
-        self.__variance_non_eating_fork = []
-        self.__variance_eating_spoon= []
-        self.__variance_non_eating_spoon = []
-
+        self.__variance_eating = []
+        self.__variance_non_eating = []
+                
         # RMS
-        self.__rms_eating_fork = []
-        self.__rms_non_eating_fork = []
-        self.__rms_eating_spoon= []
-        self.__rms_non_eating_spoon = [] 
+        self.__rms_eating = []
+        self.__rms_non_eating = []
+        
 
         # MAX
-        self.__min_eating_fork = []
-        self.__min_non_eating_fork = []
-        self.__min_eating_spoon= []
-        self.__min_non_eating_spoon = []
+        self.__min_eating = []
+        self.__min_non_eating = []
+        
 
         # MIN
-        self.__max_eating_fork = []
-        self.__max_non_eating_fork = []
-        self.__max_eating_spoon= []
-        self.__max_non_eating_spoon = []
+        self.__max_eating = []
+        self.__max_non_eating = []
+        
 
         print(os.path.realpath(__file__))
         self.__data_path = os.path.dirname(os.path.realpath(__file__))
@@ -117,15 +115,18 @@ class ActivityRecognition:
         eating = 'eating'
         non_eating = 'non_eating'
 
-        try:
-            os.mkdir(out_dir)
-            os.mkdir(self.__plots_dir)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST:
-                print("Actitivty Recognition terminated. Can not proceed since " + out_dir + " and " + self.__plots_dir + " directories exists. Please delete them and run again") 
-                sys.exit()
-            else:
-                raise
+        
+        # only if this flag enabled than there is a point in checking whether dir exists
+        if self.__save_files == True:
+            try:
+                os.mkdir(out_dir)
+                os.mkdir(self.__plots_dir)
+            except OSError as exc:
+                if exc.errno == errno.EEXIST:
+                    print("Actitivty Recognition terminated. Can not proceed since " + out_dir + " and " + self.__plots_dir + " directories exists. Please delete them and run again") 
+                    sys.exit()
+                else:
+                    raise
 
         # @todo - delete out directory if exists
         for i in range (len(self.__myo_data_file_list)):
@@ -151,7 +152,8 @@ class ActivityRecognition:
                     print("unknown file.continue")
 
 
-        self.create_plot_dir()
+        if self.__save_files == True:
+            self.create_plot_dir()
 
         # plot user17 raw data for illustration purposes
         if self.__plot == True:
@@ -165,7 +167,8 @@ class ActivityRecognition:
             plt.ylabel('Orientation')
             plt.xlabel('Sample')
             plt.legend()
-            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
+            if self.__save_files == True:
+                plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'IMU Orientation(Queternion) vs sample number'+".png")
             plt.close(self.__figure_number)
 
             plt.figure(self.get_number())
@@ -175,8 +178,9 @@ class ActivityRecognition:
             plt.title('Acceleromter VS sample number')
             plt.ylabel('Acceleromter')
             plt.xlabel('Sample number')
-            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Acceleromter VS sample number'+".png")
             plt.legend()
+            if self.__save_files == True:
+                plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Acceleromter VS sample number'+".png")            
             plt.close(self.__figure_number)
             
             plt.figure(self.get_number())
@@ -186,8 +190,9 @@ class ActivityRecognition:
             plt.title('Gyroscope VS sample number')
             plt.ylabel('Gyroscope')
             plt.xlabel('Sample number')
-            plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Gyroscope VS sample number'+".png")
             plt.legend()
+            if self.__save_files == True:
+                plt.savefig(self.__raw_plots_dir_path + str(self.__figure_number) + '_' + 'Gyroscope VS sample number'+".png")            
             plt.close(self.__figure_number)
             
         # Fork
@@ -235,7 +240,8 @@ class ActivityRecognition:
             for k in range (np.size(self.__imu_myo_fork_data_userid)):
                 if (userid == self.__imu_myo_fork_data_userid[k]):
                     user_dir_path_fork = out_dir + '/' + userid + '/' + 'fork/'
-                    os.makedirs(user_dir_path_fork)
+                    if self.__save_files == True:
+                        os.makedirs(user_dir_path_fork)
                     uid = k
                     #print("FOUND, ",k)
                     break
@@ -275,8 +281,9 @@ class ActivityRecognition:
             extracted_imu_data = []
             non_eating_action_row_indexs = np.where(non_eating_action_row_indexs == 0)[0]
             extracted_imu_data = myo_fork_data[non_eating_action_row_indexs]
+
             self.__imu_fork_non_eating.append(extracted_imu_data)
-            
+
             if self.__save_files == True:
                 # save to file the non eating with fork IMU data
                 np.savetxt(user_dir_path_fork + non_eating_file_prefix + '.csv',extracted_imu_data, delimiter=',')
@@ -288,7 +295,9 @@ class ActivityRecognition:
                 # Save the IMU data for fork eating            
                 np.savetxt(user_dir_path_fork + file_prefix + '.csv',temp_fork_eating, delimiter=',')
             
+            # Roey - that's enough to have only eating and non-eating activities (no need to seperate for spoon and fork)
             self.__imu_fork_eating.append(temp_fork_eating)
+            #self.__imu_eating.append(temp_fork_eating)
             temp_fork_eating = []
 
 
@@ -306,7 +315,8 @@ class ActivityRecognition:
                 if (userid == self.__imu_myo_spoon_data_userid[k]):
                     user_dir_path_spoon = out_dir + '/' + userid + '/' + 'spoon/'
                     #print user_dir_path_spoon
-                    os.makedirs(user_dir_path_spoon)
+                    if self.__save_files == True:
+                        os.makedirs(user_dir_path_spoon)
                     uid = k
                     #print("FOUND, ",k)
                     break
@@ -347,220 +357,145 @@ class ActivityRecognition:
             extracted_imu_data = []
             non_eating_action_row_indexs = np.where(non_eating_action_row_indexs == 0)[0]
             extracted_imu_data = myo_spoon_data[non_eating_action_row_indexs]
+            
             self.__imu_spoon_non_eating.append(extracted_imu_data)
             
             # save to file the non eating with fork IMU data
-            np.savetxt(user_dir_path_spoon + non_eating_file_prefix + '.csv',extracted_imu_data, delimiter=',')
+            if self.__save_files == True:
+                np.savetxt(user_dir_path_spoon + non_eating_file_prefix + '.csv',extracted_imu_data, delimiter=',')
 
 
             # make sure to delete the first row of ones
             temp_spoon_eating = np.delete(temp_spoon_eating,0,0)
 
-            # Save the IMU data for fork eating            
-            np.savetxt(user_dir_path_spoon + file_prefix + '.csv',temp_spoon_eating, delimiter=',')
-            self.__imu_spoon_eating.append(temp_spoon_eating)
-            temp_spoon_eating = []
-        
-
-
-    def feature_extraction(self):   
-        self.rms()
-        self.mean()
-        self.variance()
-        self.min()
-        self.max()
-        
-        
-    def rms(self):
-        print("\n")
-        print("###########################################################################")
-        print("Feature extraction: Calculate RMS of eating and non eating")
-        print("###########################################################################")
-        
-
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
-        
-        # calculate the mean acceleration on the x,y,z axis (columns)
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            rms = np.sqrt(np.mean(eating ** 2,axis = 0))
-            eating_fork[i] = rms
-
-            non_eating = self.__imu_fork_non_eating[i]
-            rms = np.sqrt(np.mean(non_eating ** 2,axis = 0))
-            non_eating_fork[i] = rms
-
-            eating = self.__imu_spoon_eating[i]
-            rms = np.sqrt(np.mean(eating ** 2,axis = 0))
-            eating_spoon[i] = rms
-
-            non_eating = self.__imu_spoon_non_eating[i]
-            rms = np.sqrt(np.mean(non_eating ** 2,axis = 0))
-            non_eating_spoon[i] = rms
+            # Save the IMU data for fork eating
+            if self.__save_files == True:
+                np.savetxt(user_dir_path_spoon + file_prefix + '.csv',temp_spoon_eating, delimiter=',')
             
-        self.__rms_eating_fork = eating_fork
-        self.__rms_non_eating_fork = non_eating_fork
-        self.__rms_eating_spoon = eating_spoon
-        self.__rms_non_eating_spoon = non_eating_spoon
+            self.__imu_spoon_eating.append(temp_spoon_eating)
 
-        if self.__plot == True:
-            self.plot_rms()
+            temp_spoon_eating = []
 
-    def mean(self):
+            # At this point we have spliited the data into two list:
+            # eating and non-eating for each user
+        
+        
+        ##### Combine eating-fork and eating-spoon to eating activity
+        ##### Combine non-eating-fork and non-eating-spoon to non-eating activity
+        for i in range(len(self.__imu_spoon_eating)):
+            eating_spoon = self.__imu_spoon_eating[i]
+            eating_fork = self.__imu_fork_eating[i]
+            eating = np.vstack((eating_spoon,eating_fork))
+            print("EATING : ", np.shape(eating))
+            self.__imu_eating.append(eating)
+
+            non_eating_spoon = self.__imu_spoon_non_eating[i]
+            non_eating_fork = self.__imu_fork_non_eating[i]
+            non_eating = np.vstack((non_eating_spoon,non_eating_fork))
+
+            # the non-eating is a sub set of the eating
+            # set the same number of rows for eating and non eating
+            non_eating = np.delete(non_eating,slice(len(eating),len(non_eating)),axis=0)
+        
+            print("NON EATING" , np.shape(non_eating))
+            self.__imu_non_eating.append(non_eating)
+
+        print("***********************")
+        print(len(self.__imu_eating))
+        print(len(self.__imu_non_eating))
+        print("***********************")
+
+
+        
+    def feature_extraction(self):
         print("\n")            
         print("###########################################################################")
         print("Feature extraction: Calculate Mean of eating and non eating...")
         print("###########################################################################")
         
-        
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
-        
+        eating = np.zeros([(len(self.__imu_eating)),10],dtype=float)
+        non_eating = np.zeros([(len(self.__imu_non_eating)),10],dtype=float) 
+
+        window_size = 20
         # calculate the mean acceleration on the x,y,z axis (columns)
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            mean = np.mean(eating,axis = 0)
-            eating_fork[i] = mean
+        for i in range(len(self.__imu_eating)):
+            # get the eatig and non eating samples
+            eating = self.__imu_eating[i]
+            non_eating = self.__imu_non_eating[i]
 
-            non_eating = self.__imu_fork_non_eating[i]
-            mean = np.mean(non_eating,axis = 0)
-            non_eating_fork[i] = mean
-
-            eating = self.__imu_spoon_eating[i]
-            mean = np.mean(eating,axis = 0)
-            eating_spoon[i] = mean
-
-            non_eating = self.__imu_spoon_non_eating[i]
-            mean = np.mean(non_eating,axis = 0)
-            non_eating_spoon[i] = mean
+            # get the divide and reminder
+            quotient = len(eating)//window_size
+            #print("QQ = ",quotient)
             
-        self.__mean_eating_fork = eating_fork
-        self.__mean_non_eating_fork = non_eating_fork
-        self.__mean_eating_spoon = eating_spoon
-        self.__mean_non_eating_spoon = non_eating_spoon
-
-        if self.__plot == True:
-            self.plot_mean()
-                 
-
-    def variance(self):
-        print("\n")
-        print("###########################################################################")
-        print("Feature extraction: Calculate Variance of eating and non eating")
-        print("###########################################################################")
-        
-
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
-        
-        # calculate the mean acceleration on the x,y,z axis (columns)
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            mean = np.var(eating,axis = 0)
-            eating_fork[i] = mean
-
-            non_eating = self.__imu_fork_non_eating[i]
-            mean = np.var(non_eating,axis = 0)
-            non_eating_fork[i] = mean
-
-            eating = self.__imu_spoon_eating[i]
-            mean = np.var(eating,axis = 0)
-            eating_spoon[i] = mean
-
-            non_eating = self.__imu_spoon_non_eating[i]
-            mean = np.var(non_eating,axis = 0)
-            non_eating_spoon[i] = mean
+            reminder = np.mod(len(eating),window_size)
             
-        self.__variance_eating_fork = eating_fork
-        self.__variance_non_eating_fork = non_eating_fork
-        self.__variance_eating_spoon = eating_spoon
-        self.__variance_non_eating_spoon = non_eating_spoon
+            start=0
 
-        if self.__plot == True:
-            self.plot_variance()
+            for j in range(0,quotient):
+                end = start + window_size
+                #print("START = ",start,"END = ",end)
 
-    def min(self):    
-        print("\n")
-        print("###########################################################################")
-        print("Feature extraction: Calculate MIN of eating and non eating...")
-        print("###########################################################################")
+                # extract all features - eating
+                # Mean
+                self.__mean_eating.append(np.mean(eating[start:end],axis = 0))                
+                # Variance
+                self.__variance_eating.append(np.var(eating[start:end],axis = 0))
+                # Min
+                self.__min_eating.append(np.min(eating[start:end],axis = 0))
+                # Max
+                self.__max_eating.append(np.max(eating[start:end],axis = 0))
+                # RMS
+                self.__rms_eating.append(np.sqrt(np.mean(eating[start:end] ** 2,axis = 0)))
         
+                # extract all features - non eating
+                # Mean
+                self.__mean_non_eating.append(np.mean(non_eating[start:end],axis = 0))
+                # Variance
+                self.__variance_non_eating.append(np.var(non_eating[start:end],axis = 0))
+                # Min
+                self.__min_non_eating.append(np.min(non_eating[start:end],axis = 0))
+                # Max
+                self.__max_non_eating.append(np.max(non_eating[start:end],axis = 0))
+                # RMS
+                self.__rms_non_eating .append(np.sqrt(np.mean(non_eating[start:end] ** 2,axis = 0)))
+                
+                start=end
 
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
+
+        #print("LEN mean eating = ",len(self.__mean_eating))
+        #print("LEN variance eating = ", len(self.__variance_eating))
+        #print("LEN rms eating = ", len(self.__rms_eating))
+        #print("LEN min eating = ", len(self.__min_eating))
+        #print("LEN max eating = ", len(self.__max_eating))
+        #
+#
+        #print("LEN mean non eating = ",len(self.__mean_non_eating))
+        #print("LEN variance non eating = ", len(self.__variance_non_eating))
+        #print("LEN rms non eating = ", len(self.__rms_non_eating))
+        #print("LEN min non eating = ", len(self.__min_non_eating))
+        #print("LEN max non eating = ", len(self.__max_non_eating))
+
+        X_1 = np.hstack\
+            ((self.__mean_eating,\
+            self.__variance_eating, \
+            self.__rms_eating, \
+            self.__min_eating, \
+            self.__max_eating))
         
-        # calculate the MIN acceleration on the x,y,z axis (columns)
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            min = np.min(eating,axis = 0)
-            eating_fork[i] = min
-
-            non_eating = self.__imu_fork_non_eating[i]
-            min = np.min(non_eating,axis = 0)
-            non_eating_fork[i] = min
-
-            eating = self.__imu_spoon_eating[i]
-            min = np.min(eating,axis = 0)
-            eating_spoon[i] = min
-
-            non_eating = self.__imu_spoon_non_eating[i]
-            min = np.min(non_eating,axis = 0)
-            non_eating_spoon[i] = min
-            
-        self.__min_eating_fork = eating_fork
-        self.__min_non_eating_fork = non_eating_fork
-        self.__min_eating_spoon = eating_spoon
-        self.__min_non_eating_spoon = non_eating_spoon
-
-        if self.__plot == True:
-            self.plot_min()
-
-    def max(self):    
-        print("\n")
-        print("###########################################################################")
-        print("Feature extraction: Calculate MAX of eating and non eating...")
-        print("###########################################################################")        
-
-        eating_fork = np.zeros([len(self.__imu_fork_eating),10],dtype=float)
-        non_eating_fork = np.zeros([len(self.__imu_fork_non_eating),10],dtype=float) 
-        eating_spoon = np.zeros([len(self.__imu_spoon_eating),10],dtype=float)
-        non_eating_spoon = np.zeros([len(self.__imu_spoon_non_eating),10],dtype=float)
+        X_2 = np.hstack\
+            ((self.__mean_non_eating,\
+            self.__variance_non_eating, \
+            self.__rms_non_eating, \
+            self.__min_non_eating, \
+            self.__max_non_eating))
         
-        # calculate the mean acceleration on the x,y,z axis (columns)
-        for i in range(len(self.__imu_fork_eating)):
-            eating = self.__imu_fork_eating[i]
-            max = np.max(eating,axis = 0)
-            eating_fork[i] = max
+        
+        # This the feature matrix which will be the input to PCA
+        X = np.vstack((X_1,X_2))
 
-            non_eating = self.__imu_fork_non_eating[i]
-            max = np.max(non_eating,axis = 0)
-            non_eating_fork[i] = max
-
-            eating = self.__imu_spoon_eating[i]
-            max = np.max(eating,axis = 0)
-            eating_spoon[i] = max
-
-            non_eating = self.__imu_spoon_non_eating[i]
-            max = np.min(non_eating,axis = 0)
-            non_eating_spoon[i] = max
-            
-        self.__max_eating_fork = eating_fork
-        self.__max_non_eating_fork = non_eating_fork
-        self.__max_eating_spoon = eating_spoon
-        self.__max_non_eating_spoon = non_eating_spoon
-
-        if self.__plot == True:
-            self.plot_max()
-
+        print(np.shape(X))
+        
+        
 
     
     def create_plot_dir(self):
@@ -978,18 +913,18 @@ def main():
     activityRecognition = ActivityRecognition()
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
-    activityRecognition.pca()
+    #activityRecognition.pca()
 
     # Project 2    
-    reduced_feature_matrix = activityRecognition.pca_all()
+    #reduced_feature_matrix = activityRecognition.pca_all()
 
-    userDependentAnalysis = UserDependentAnalysis(reduced_feature_matrix)
+    #userDependentAnalysis = UserDependentAnalysis(reduced_feature_matrix)
 
-    X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset()
+    #X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset()
 
-    userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
-    userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
-    userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
+    #userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
+    #userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
+    #userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
 
 if __name__ == "__main__":
     main()
