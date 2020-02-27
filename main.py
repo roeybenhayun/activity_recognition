@@ -53,7 +53,7 @@ class ActivityRecognition:
 
         self.__X = []
 
-        #self.__number_of_rows_per_user = []
+        self.__number_of_rows_per_user = []
         # MEAN
         self.__mean_eating = []
         self.__mean_non_eating = []
@@ -387,7 +387,11 @@ class ActivityRecognition:
             quotient = len(eating)//window_size
             #print("QQ = ",quotient)
             
+            # this will be used later for splitting the user data
+            self.__number_of_rows_per_user.append(quotient)
+
             reminder = np.mod(len(eating),window_size)
+            
             
             start=0
 
@@ -452,6 +456,7 @@ class ActivityRecognition:
 
         # This the feature matrix which will be the input to PCA
         self.__X = np.vstack((X_1,X_2))
+
         #print(np.shape(X))
                 
 
@@ -461,42 +466,71 @@ class ActivityRecognition:
         print("PCA")
         print("###########################################################################")
         X_reduced = PCA(n_components=5).fit_transform(self.__X)
-        return X_reduced
+        return X_reduced, self.__number_of_rows_per_user
 
 
 class UserDependentAnalysis:
-    def __init__(self,feature_vector=None):
+    def __init__(self,X_reduced=None,user_data_info_list=None):
         print("User Dependent Analysis constructor")
-        self.__X_reduced = feature_vector
+        self.__X_reduced = X_reduced
+        self.__user_data_info_list = user_data_info_list
+        
 
 
-    def split_dataset(self):
+    def split_dataset(self,split_type):
         print("\n")
         print("###########################################################################")
         print("Data set split")
         print("###########################################################################")
-        # https://www.kaggle.com/moghazy/cracking-the-iris-dataset-eda-pca-and-svm
+        
+        if (split_type == 'user_data_60_40'):
+            print(self.__user_data_info_list)
+            # split 60% for training and 40% for testing
+            start = 0
+            for i in range(0,len(self.__user_data_info_list)):            
+                user_data = self.__user_data_info_list[i]
+                user_data_testing_range = int(np.round(user_data*0.6))
+                print (user_data_testing_range)
+                print("START = ", start, "END = ",user_data_testing_range)
+                
+                end = user_data - user_data_testing_range
+                training = self.__X_reduced[start:start+user_data_testing_range,:]
+                testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
 
-        #y[0:60]='y'
-        #y[60:119] ='n'
-        Y = []
-        for i in range(60):
-            Y.append("eating")
-        for i in range(60,120):
-            Y.append("non_eating")
+                print(np.shape(training))
+                print(np.shape(testing))
+                
+                start = start + user_data
 
-        # Split the data in 60% training/validation and 40% test set. random_state was set to a constant value
-        # in order to get conssistent results when we re run the code
-        X_train, X_test, Y_train, Y_test = train_test_split(self.__X_reduced , Y, test_size=0.4, random_state=42)
+                
+                #X_train.append(self.__X_reduced(start:user_data_testing_range))
 
-        print(np.shape(self.__X_reduced ))
-        print("train test spllit")
-        print("X_train shape: " ,np.shape(X_train))
-        print("X_test shape : " ,np.shape(X_test))
-        print("Y_train shape : " ,np.shape(Y_train))
-        print("Y_test shape : " ,np.shape(Y_test))
+        elif (split_type == 'user_id_60_40'):
+            #y[0:60]='y'
+            #y[60:119] ='n'
+            Y = []
+            for i in range(60):
+                Y.append("eating")
+            for i in range(60,120):
+                Y.append("non_eating")
 
-        return X_train,X_test,Y_train,Y_test
+            # Split the data in 60% training/validation and 40% test set. random_state was set to a constant value
+            # in order to get conssistent results when we re run the code
+            X_train, X_test, Y_train, Y_test = train_test_split(self.__X_reduced , Y, test_size=0.4, random_state=42)
+
+            print(np.shape(self.__X_reduced ))
+            print("train test spllit")
+            print("X_train shape: " ,np.shape(X_train))
+            print("X_test shape : " ,np.shape(X_test))
+            print("Y_train shape : " ,np.shape(Y_train))
+            print("Y_test shape : " ,np.shape(Y_test))
+        
+        else:
+            print("Invalid split type")
+
+        
+        return 0,0,0,0
+        #return X_train,X_test,Y_train,Y_test
     
     def classify(self,classifier,X_train, X_test, Y_train, Y_test):
         if (classifier == 'svm'):
@@ -529,13 +563,15 @@ def main():
     activityRecognition = ActivityRecognition()
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
-    reduced_feature_matrix = activityRecognition.pca()
+    reduced_feature_matrix,rows_per_user_list = activityRecognition.pca()
     print(np.shape(reduced_feature_matrix))
+    
 
     # Project 2
-    userDependentAnalysis = UserDependentAnalysis(reduced_feature_matrix)
+    userDependentAnalysis = UserDependentAnalysis(reduced_feature_matrix,rows_per_user_list)
 
-    #X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset()
+
+    X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset('user_data_60_40')
 
     #userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
     #userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
