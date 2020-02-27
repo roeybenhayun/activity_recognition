@@ -491,9 +491,13 @@ class UserDependentAnalysis:
         non_eating_part_offset = len(self.__X_reduced)//2
         print("OFFSET = ",non_eating_part_offset)
         
+        X_train_eating = np.ones((1,5),dtype=float)
+        X_train_non_eating = np.ones((1,5),dtype=float)
+        X_test_eating = np.ones((1,5),dtype=float)
+        X_test_non_eatin = np.ones((1,5),dtype=float)
+
         X_train = np.ones((1,5),dtype=float)
         X_test = np.ones((1,5),dtype=float)
-
 
         if (split_type == 'user_data_60_40'):
             print(self.__user_data_info_list)
@@ -501,33 +505,38 @@ class UserDependentAnalysis:
             start = 0
             for i in range(0,len(self.__user_data_info_list)):            
                 user_data = self.__user_data_info_list[i]
-                user_data_testing_range = int(np.round(user_data*0.4))
+                user_data_testing_range = int(np.round(user_data*0.6))
                 print (user_data_testing_range)
                 print("START = ", start, "END = ",user_data_testing_range)
                 
                 end = user_data - user_data_testing_range
-                eating_testing = self.__X_reduced[start:start+user_data_testing_range,:]
-                eating_training = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
+                eating_training = self.__X_reduced[start:start+user_data_testing_range,:]
+                eating_testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
 
                 print(np.shape(eating_training))
                 print(np.shape(eating_testing))
                 
-                non_eating_testing = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
-                non_eating_training = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
+                non_eating_training = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
+                non_eating_testing = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
 
                 print(np.shape(non_eating_training))
                 print(np.shape(non_eating_testing))
 
                 start = start + user_data
                 
-                X_train = np.vstack([X_train,eating_training])
-                X_train = np.vstack([X_train,non_eating_training])
-                X_test = np.vstack([X_test,eating_testing])
-                X_test = np.vstack([X_test,non_eating_testing])
+                X_train_eating = np.vstack([X_train_eating,eating_training])
+                X_train_non_eating = np.vstack([X_train_non_eating,non_eating_training])
+                X_test_eating = np.vstack([X_test_eating,eating_testing])
+                X_test_non_eatin = np.vstack([X_test_non_eatin,non_eating_testing])
 
             # just delete the first rows
-            X_train = np.delete(X_train,0,0)
-            X_test = np.delete(X_test,0,0)
+            X_train_eating = np.delete(X_train_eating,0,0)
+            X_train_non_eating = np.delete(X_train_non_eating,0,0)
+            X_test_eating = np.delete(X_train_eating,0,0)
+            X_test_non_eatin = np.delete(X_train_non_eating,0,0)
+
+            X_train = np.vstack((X_train_eating,X_train_non_eating))
+            X_test = np.vstack((X_test_eating,X_test_non_eatin))
 
             print("Training dims : ",np.shape(X_train), "Length = ", len(X_train))
             print("Testing dims : ",np.shape(X_test), "Length = ", len(X_test))
