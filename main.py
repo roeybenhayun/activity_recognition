@@ -456,8 +456,9 @@ class ActivityRecognition:
 
         # This the feature matrix which will be the input to PCA
         self.__X = np.vstack((X_1,X_2))
-
-        #print(np.shape(X))
+        print(np.shape(X_1))
+        print(np.shape(X_2))
+        print(np.shape(self.__X))
                 
 
     def pca(self):
@@ -483,6 +484,15 @@ class UserDependentAnalysis:
         print("Data set split")
         print("###########################################################################")
         
+        print("X after PCA shape = ",len(self.__X_reduced))
+
+        non_eating_part_offset = len(self.__X_reduced)//2
+        print("OFFSET = ",non_eating_part_offset)
+        
+        X_train = np.ones((1,5),dtype=float)
+        X_test = np.ones((1,5),dtype=float)
+
+
         if (split_type == 'user_data_60_40'):
             print(self.__user_data_info_list)
             # split 60% for training and 40% for testing
@@ -494,21 +504,47 @@ class UserDependentAnalysis:
                 print("START = ", start, "END = ",user_data_testing_range)
                 
                 end = user_data - user_data_testing_range
-                training = self.__X_reduced[start:start+user_data_testing_range,:]
-                testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
+                eating_training = self.__X_reduced[start:start+user_data_testing_range,:]
+                eating_testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
 
-                print(np.shape(training))
-                print(np.shape(testing))
+                print(np.shape(eating_training))
+                print(np.shape(eating_testing))
                 
+                non_eating_training = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
+                non_eating_testing = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
+
+                print(np.shape(non_eating_training))
+                print(np.shape(non_eating_testing))
+
                 start = start + user_data
-
                 
-                #X_train.append(self.__X_reduced(start:user_data_testing_range))
+                X_train = np.vstack([X_train,eating_training])
+                X_train = np.vstack([X_train,non_eating_training])
+                X_test = np.vstack([X_test,eating_testing])
+                X_test = np.vstack([X_test,non_eating_testing])
+
+        
+            print("Training dims : ",np.shape(X_train), "Length = ", len(X_train))
+            print("Testing dims : ",np.shape(X_test), "Length = ", len(X_test))
+
+            Y = []
+            for i in range(len(self.__X_reduced)//2):
+                Y.append("eating")
+            for i in range(len(self.__X_reduced)//2,len(self.__X_reduced)):
+                Y.append("non_eating")
+
+            Y_train = Y[0:len(X_train)]
+            Y_test = Y[len(X_train):len(self.__X_reduced)]
+
+            print("Length of Y = ", len(Y))
+            print("Train label length = ", len(Y_train))
+            print("Test label length = ", len(Y_test))
+
 
         elif (split_type == 'user_id_60_40'):
             #y[0:60]='y'
             #y[60:119] ='n'
-            Y = []
+            Y = []        
             for i in range(60):
                 Y.append("eating")
             for i in range(60,120):
