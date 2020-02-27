@@ -342,10 +342,12 @@ class ActivityRecognition:
         
         ##### Combine eating-fork and eating-spoon to eating activity
         ##### Combine non-eating-fork and non-eating-spoon to non-eating activity
+        nof_rows = 0
         for i in range(len(self.__imu_spoon_eating)):
             eating_spoon = self.__imu_spoon_eating[i]
             eating_fork = self.__imu_fork_eating[i]
             eating = np.vstack((eating_spoon,eating_fork))
+            nof_rows = nof_rows + len(eating)
             print("EATING : ", np.shape(eating))
             self.__imu_eating.append(eating)
 
@@ -361,8 +363,8 @@ class ActivityRecognition:
             self.__imu_non_eating.append(non_eating)
 
         print("***********************")
-        print(len(self.__imu_eating))
-        print(len(self.__imu_non_eating))
+        print("IMU_EATING length", len(self.__imu_eating), "NUMBER OF EATING ROWS ", nof_rows)
+        print("IMU_NON_EATING length", len(self.__imu_non_eating))
         print("***********************")
 
 
@@ -421,7 +423,7 @@ class ActivityRecognition:
                 # Max
                 self.__max_non_eating.append(np.max(non_eating[start:end],axis = 0))
                 # RMS
-                self.__rms_non_eating .append(np.sqrt(np.mean(non_eating[start:end] ** 2,axis = 0)))
+                self.__rms_non_eating.append(np.sqrt(np.mean(non_eating[start:end] ** 2,axis = 0)))
                 
                 start=end
 
@@ -499,19 +501,19 @@ class UserDependentAnalysis:
             start = 0
             for i in range(0,len(self.__user_data_info_list)):            
                 user_data = self.__user_data_info_list[i]
-                user_data_testing_range = int(np.round(user_data*0.6))
+                user_data_testing_range = int(np.round(user_data*0.4))
                 print (user_data_testing_range)
                 print("START = ", start, "END = ",user_data_testing_range)
                 
                 end = user_data - user_data_testing_range
-                eating_training = self.__X_reduced[start:start+user_data_testing_range,:]
-                eating_testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
+                eating_testing = self.__X_reduced[start:start+user_data_testing_range,:]
+                eating_training = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
 
                 print(np.shape(eating_training))
                 print(np.shape(eating_testing))
                 
-                non_eating_training = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
-                non_eating_testing = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
+                non_eating_testing = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
+                non_eating_training = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
 
                 print(np.shape(non_eating_training))
                 print(np.shape(non_eating_testing))
@@ -523,7 +525,10 @@ class UserDependentAnalysis:
                 X_test = np.vstack([X_test,eating_testing])
                 X_test = np.vstack([X_test,non_eating_testing])
 
-        
+            # just delete the first rows
+            X_train = np.delete(X_train,0,0)
+            X_test = np.delete(X_test,0,0)
+
             print("Training dims : ",np.shape(X_train), "Length = ", len(X_train))
             print("Testing dims : ",np.shape(X_test), "Length = ", len(X_test))
 
@@ -539,6 +544,8 @@ class UserDependentAnalysis:
             print("Length of Y = ", len(Y))
             print("Train label length = ", len(Y_train))
             print("Test label length = ", len(Y_test))
+
+            return X_train,X_test,Y_train,Y_test
 
 
         elif (split_type == 'user_id_60_40'):
@@ -608,7 +615,7 @@ def main():
 
 
     X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset('user_data_60_40')
-
+    
     #userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
     #userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
     #userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
