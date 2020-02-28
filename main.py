@@ -87,13 +87,6 @@ class ActivityRecognition:
                     self.__ground_truth_file_list.append(os.path.join(subdir, file))
                     self.__number_of_users = self.__number_of_users + 1
             
-        # need to allocate those lists
-        print("********************************************")
-        print("Number of users is  ", self.__number_of_users/2)
-        print("Number of eating lists  ", self.__number_of_users)
-        print("Total number of lists  ", self.__number_of_users*2)
-        print("********************************************")
-
         self.__myo_data_file_list = []
 
         if (myo_data_dir_path is None):                        
@@ -479,20 +472,20 @@ class UserDependentAnalysis:
         if(self.__log_enabled==True):
             print("OFFSET = ",non_eating_part_offset)
         
-        X_train_eating = np.ones((1,5),dtype=float)
-        X_train_non_eating = np.ones((1,5),dtype=float)
-        X_test_eating = np.ones((1,5),dtype=float)
-        X_test_non_eatin = np.ones((1,5),dtype=float)
-
-        X_train = np.ones((1,5),dtype=float)
-        X_test = np.ones((1,5),dtype=float)
-
-
         if (split_type == 'user_data_60_40'):
+            X_train_eating = np.ones((1,5),dtype=float)
+            X_train_non_eating = np.ones((1,5),dtype=float)
+            X_test_eating = np.ones((1,5),dtype=float)
+            X_test_non_eatin = np.ones((1,5),dtype=float)
+
+            X_train = np.ones((1,5),dtype=float)
+            X_test = np.ones((1,5),dtype=float)
+
             if(self.__log_enabled==True):
                 print(self.__user_data_info_list)
-            # split 60% for training and 40% for testing
+            
             start = 0
+            # split 60% for training and 40% for testing
             for i in range(0,len(self.__user_data_info_list)):            
                 user_data = self.__user_data_info_list[i]
                 user_data_testing_range = int(np.round(user_data*0.6))
@@ -500,6 +493,7 @@ class UserDependentAnalysis:
                 if(self.__log_enabled==True):
                     print("START section= ", start, "END train section = ",user_data_testing_range, "Section size = ", user_data)
                 
+                #extract train and test for eating
                 end = user_data - user_data_testing_range
                 eating_training = self.__X_reduced[start:start+user_data_testing_range,:]
                 eating_testing = self.__X_reduced[start+user_data_testing_range:start+user_data_testing_range+end,:]
@@ -508,6 +502,7 @@ class UserDependentAnalysis:
                     print("eating training:", np.shape(eating_training))
                     print("eating testing: ",np.shape(eating_testing))
 
+                # extract train and test for non eating
                 non_eating_training = self.__X_reduced[non_eating_part_offset+start:non_eating_part_offset+start+user_data_testing_range,:]
                 non_eating_testing = self.__X_reduced[non_eating_part_offset+start+user_data_testing_range:non_eating_part_offset+start+user_data_testing_range+end,:]
 
@@ -517,12 +512,13 @@ class UserDependentAnalysis:
 
                 start = start + user_data
                 
+                # combine train and test set
                 X_train_eating = np.vstack([X_train_eating,eating_training])
                 X_train_non_eating = np.vstack([X_train_non_eating,non_eating_training])
                 X_test_eating = np.vstack([X_test_eating,eating_testing])
                 X_test_non_eatin = np.vstack([X_test_non_eatin,non_eating_testing])
 
-            # just delete the first rows
+            # delete the first rows of ones (probably there is a better way)
             X_train_eating = np.delete(X_train_eating,0,0)
             X_train_non_eating = np.delete(X_train_non_eating,0,0)
             X_test_eating = np.delete(X_test_eating,0,0)
@@ -534,16 +530,17 @@ class UserDependentAnalysis:
                 print("X_test_eating",np.shape(X_test_eating))
                 print("X_test_non_eatin", np.shape(X_test_non_eatin))
             
-
+            # stack Train and Test
             X_train = np.vstack((X_train_eating,X_train_non_eating))
             X_test = np.vstack((X_test_eating,X_test_non_eatin))
 
-
+            # Preare indexes for lables
             part1 = len(X_train_eating)
             part2 = part1 + len(X_train_non_eating)
             part3 = part2 + len(X_test_eating)
             part4 = part3 + len(X_test_non_eatin)
             Y = []
+            # set the lables 
             for i in range(part1):
                 Y.append("eating")
             for i in range(part1,part2):
@@ -561,39 +558,39 @@ class UserDependentAnalysis:
             print("---------------------")
             print("Training data set: ",np.shape(X_train))
             print("Testing data set: ",np.shape(X_test))
-            print("Training label set:", len(Y_train))
-            print("Testing label set:", len(Y_test))
+            print("Training label set:", np.shape(Y_train))
+            print("Testing label set:", np.shape(Y_test))
             print("###########################################################################\n")
 
-            return X_train,X_test,Y_train,Y_test
-
-
         elif (split_type == 'user_id_60_40'):
-            #y[0:60]='y'
-            #y[60:119] ='n'
-            Y = []        
-            for i in range(60):
+            print("X = ",len(self.__X_reduced))
+            Y = []
+            # Set labled
+            for i in range(len(self.__X_reduced)//2):
                 Y.append("eating")
-            for i in range(60,120):
+            for i in range(len(self.__X_reduced)//2,len(self.__X_reduced)):
                 Y.append("non_eating")
 
+            #print("Y = ",len(Y))
             # Split the data in 60% training/validation and 40% test set. random_state was set to a constant value
             # in order to get conssistent results when we re run the code
             X_train, X_test, Y_train, Y_test = train_test_split(self.__X_reduced , Y, test_size=0.4, random_state=42)
 
-            print(np.shape(self.__X_reduced ))
-            print("train test spllit")
-            print("X_train shape: " ,np.shape(X_train))
-            print("X_test shape : " ,np.shape(X_test))
-            print("Y_train shape : " ,np.shape(Y_train))
-            print("Y_test shape : " ,np.shape(Y_test))
+            #print(np.shape(self.__X_reduced ))
+
+            print("\n###########################################################################")
+            print("User ID 60/40 split")
+            print("---------------------")
+            print("Training data set: ",np.shape(X_train))
+            print("Testing data set: ",np.shape(X_test))
+            print("Training label set:", np.shape(Y_train))
+            print("Testing label set:", np.shape(Y_test))
+            print("###########################################################################\n")
         
         else:
             print("Invalid split type")
-
         
-        return 0,0,0,0
-        #return X_train,X_test,Y_train,Y_test
+        return X_train,X_test,Y_train,Y_test
     
     def classify(self,classifier,X_train, X_test, Y_train, Y_test):
         if (classifier == 'svm'):
@@ -634,22 +631,18 @@ def main():
     activityRecognition.preprocessing()
     activityRecognition.feature_extraction()
     feature_matrix,rows_per_user_list = activityRecognition.pca()
-    
-    
+        
     userDependentAnalysis = UserDependentAnalysis(feature_matrix,rows_per_user_list)
 
-
     X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset('user_data_60_40')
-    
     userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
     userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
     userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
 
-    #X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset('user_id_60_40')
-    
-    #userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
-    #userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
-    #userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
+    X_train,X_test, Y_train, Y_test = userDependentAnalysis.split_dataset('user_id_60_40')    
+    userDependentAnalysis.classify('svm',X_train,X_test, Y_train, Y_test)
+    userDependentAnalysis.classify('decision_tree',X_train,X_test, Y_train, Y_test)
+    userDependentAnalysis.classify('neural_nets',X_train,X_test, Y_train, Y_test)
 
 if __name__ == "__main__":
     main()
